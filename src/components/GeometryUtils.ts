@@ -75,22 +75,13 @@ export function createRectangularBoltPattern(
     const topBottomLength = availableWidth;
     const leftRightLength = availableHeight;
     
-    // Determine how many bolts to add on each edge
+    // Determine how many bolts to add on each edge based purely on dimensions
     const topBottomBolts = Math.max(0, Math.floor(topBottomLength / targetSpacing) - 1);
     const leftRightBolts = Math.max(0, Math.floor(leftRightLength / targetSpacing) - 1);
     
-    const totalEdgeBolts = 2 * topBottomBolts + 2 * leftRightBolts;
-    
-    // If we need more bolts than calculated, distribute them evenly
+    // Use actual bolt counts based on dimensions only
     let finalTopBottomBolts = topBottomBolts;
     let finalLeftRightBolts = leftRightBolts;
-    
-    if (remainingBolts > totalEdgeBolts) {
-      // Distribute extra bolts proportionally
-      const ratio = remainingBolts / totalEdgeBolts;
-      finalTopBottomBolts = Math.ceil(topBottomBolts * ratio);
-      finalLeftRightBolts = Math.ceil(leftRightBolts * ratio);
-    }
     
     // Add bolts on top edge (between top-left and top-right corners)
     if (finalTopBottomBolts > 0 && positions.length < boltCount) {
