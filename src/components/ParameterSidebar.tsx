@@ -396,6 +396,26 @@ export default function ParameterSidebar({
                 />
               </div>
             </div>
+
+            {/* Max Bolt Spacing */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Max Bolt Spacing (mm)
+              </label>
+              <input
+                type="number"
+                min="50"
+                max="300"
+                step="10"
+                value={plateParams.maxBoltSpacing || 150}
+                onChange={(e) => onPlateParamsChange({ 
+                  ...plateParams, 
+                  maxBoltSpacing: Number(e.target.value) 
+                })}
+                className="w-full px-4 py-2.5 glass-input rounded-lg text-white outline-none placeholder-gray-400"
+              />
+              <div className="text-xs text-gray-400 mt-1">Controls automatic bolt placement density</div>
+            </div>
           </div>
           </div>
         </div>

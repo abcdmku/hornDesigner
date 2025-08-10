@@ -437,7 +437,8 @@ function createPlateWithHoles(plateParams: MountPlateParams, hornLength: number,
         plateHeight,
         plateParams.boltCount || 4,
         plateParams.boltHoleDiameter || 6,
-        margin / 2 // Place bolts in center of margin
+        margin / 2, // Place bolts in center of margin
+        plateParams.maxBoltSpacing || 150
       );
       
       // Create bolt holes at calculated positions

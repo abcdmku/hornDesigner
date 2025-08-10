@@ -34,7 +34,8 @@ export const DEFAULT_PLATE_PARAMS = {
   boltHoleDiameter: 6,
   boltCircleDiameter: 200,
   useManualSize: false,
-  autoMargin: 20
+  autoMargin: 20,
+  maxBoltSpacing: 150
 };
 
 // Default values for driver mount

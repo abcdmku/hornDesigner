@@ -23,6 +23,7 @@ export interface MountPlateParams {
   cornerRadius?: number;      // for rect
   useManualSize: boolean; // toggle for manual size input
   autoMargin?: number;  // margin for auto sizing
+  maxBoltSpacing?: number; // maximum spacing between bolts (mm)
 }
 
 export interface DriverMountParams {

@@ -39,13 +39,14 @@ export function createBoltHoles(
   return holes;
 }
 
-// Rectangle bolt positioning algorithm - corners + 150mm spacing
+// Rectangle bolt positioning algorithm - corners + configurable spacing
 export function createRectangularBoltPattern(
   width: number,
   height: number,
   boltCount: number,
   boltDiameter: number,
-  margin: number = 10
+  margin: number = 10,
+  maxSpacing: number = 150
 ): Array<{ x: number; y: number }> {
   const positions: Array<{ x: number; y: number }> = [];
   
@@ -68,8 +69,8 @@ export function createRectangularBoltPattern(
   const remainingBolts = Math.max(0, boltCount - 4);
   
   if (remainingBolts > 0) {
-    // Calculate spacing needed for 150mm requirement
-    const targetSpacing = 150;
+    // Use configurable max spacing
+    const targetSpacing = maxSpacing;
     
     // Calculate edge lengths
     const topBottomLength = availableWidth;
@@ -132,10 +133,10 @@ export function createRectangularBoltPattern(
 }
 
 // Calculate recommended bolt count for rectangular mounting plates
-export function calculateRecommendedBoltCount(width: number, height: number, margin: number = 10): number {
+export function calculateRecommendedBoltCount(width: number, height: number, margin: number = 10, maxSpacing: number = 150): number {
   const availableWidth = width - 2 * margin;
   const availableHeight = height - 2 * margin;
-  const targetSpacing = 150;
+  const targetSpacing = maxSpacing;
   
   // Start with 4 corner bolts
   let boltCount = 4;
