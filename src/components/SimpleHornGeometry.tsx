@@ -375,12 +375,13 @@ function createPlateWithHoles(plateParams: MountPlateParams, hornLength: number,
     const hornExitWidth = hornParams.mouthWidth;
     const hornExitHeight = hornParams.mouthHeight || hornParams.mouthWidth;
     
+    const margin = plateParams.autoMargin || 20;
     const outerWidth = plateParams.useManualSize ? 
-      (plateParams.width || (hornExitWidth + 40)) : 
-      (hornExitWidth + 40);
+      (plateParams.width || (hornExitWidth + margin * 2)) : 
+      (hornExitWidth + margin * 2);
     const outerHeight = plateParams.useManualSize ? 
-      (plateParams.height || (hornExitHeight + 40)) : 
-      (hornExitHeight + 40);
+      (plateParams.height || (hornExitHeight + margin * 2)) : 
+      (hornExitHeight + margin * 2);
     const innerWidth = hornParams.roundMouth ? 
       hornParams.mouthWidth : 
       hornParams.mouthWidth;
@@ -401,9 +402,10 @@ function createPlateWithHoles(plateParams: MountPlateParams, hornLength: number,
       hornParams.mouthWidth / 2 :
       Math.max(hornParams.mouthWidth, hornParams.mouthHeight || hornParams.mouthWidth) / 2;
     
+    const margin = plateParams.autoMargin || 20;
     const outerRadius = plateParams.useManualSize ? 
-      (plateParams.diameter ? (plateParams.diameter / 2) : (hornExitRadius + 20)) : 
-      (hornExitRadius + 20);
+      (plateParams.diameter ? (plateParams.diameter / 2) : (hornExitRadius + margin)) : 
+      (hornExitRadius + margin);
     const innerRadius = hornExitRadius;
     
     baseGeometry = createRingGeometry(outerRadius, innerRadius, plateParams.thickness);

@@ -22,6 +22,7 @@ export interface MountPlateParams {
   boltCircleDiameter: number; // spacing
   cornerRadius?: number;      // for rect
   useManualSize: boolean; // toggle for manual size input
+  autoMargin?: number;  // margin for auto sizing
 }
 
 export interface DriverMountParams {

@@ -257,7 +257,7 @@ export default function ParameterSidebar({
                       : 'text-gray-400 hover:text-gray-300 hover:bg-white/5'
                   }`}
                 >
-                  Auto (+20mm)
+                  Auto
                 </button>
                 <button
                   type="button"
@@ -271,6 +271,24 @@ export default function ParameterSidebar({
                   Manual
                 </button>
               </div>
+              
+              {/* Auto sizing margin input */}
+              {!plateParams.useManualSize && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Extra Margin (mm)
+                  </label>
+                  <input
+                    type="number"
+                    value={plateParams.autoMargin || 20}
+                    onChange={(e) => onPlateParamsChange({ 
+                      ...plateParams, 
+                      autoMargin: Number(e.target.value) 
+                    })}
+                    className="w-full px-4 py-2.5 glass-input rounded-lg text-white outline-none placeholder-gray-400"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Plate Dimensions - only show when manual mode enabled */}
