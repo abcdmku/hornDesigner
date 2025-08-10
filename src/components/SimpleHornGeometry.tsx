@@ -367,14 +367,20 @@ function createMorphingHornGeometry(params: HornProfileParams & {
 function createPlateWithHoles(plateParams: MountPlateParams, hornLength: number, hornParams: HornProfileParams): THREE.BufferGeometry {
   let baseGeometry: THREE.BufferGeometry;
   
-  if (plateParams.type === 'rect') {
-    // Rectangular plate with rectangular opening - size based on horn mouth + margin
+  // Plate type always matches horn mouth shape
+  const plateType = hornParams.roundMouth ? 'circle' : 'rect';
+  
+  if (plateType === 'rect') {
+    // Rectangular plate with rectangular opening - size based on horn mouth + 20mm
     const hornExitWidth = hornParams.mouthWidth;
     const hornExitHeight = hornParams.mouthHeight || hornParams.mouthWidth;
-    const margin = Math.max(hornExitWidth, hornExitHeight) * 0.4; // 40% margin around exit
     
-    const outerWidth = plateParams.width || (hornExitWidth + margin * 2);
-    const outerHeight = plateParams.height || (hornExitHeight + margin * 2);
+    const outerWidth = plateParams.useManualSize ? 
+      (plateParams.width || (hornExitWidth + 40)) : 
+      (hornExitWidth + 40);
+    const outerHeight = plateParams.useManualSize ? 
+      (plateParams.height || (hornExitHeight + 40)) : 
+      (hornExitHeight + 40);
     const innerWidth = hornParams.roundMouth ? 
       hornParams.mouthWidth : 
       hornParams.mouthWidth;
@@ -390,13 +396,14 @@ function createPlateWithHoles(plateParams: MountPlateParams, hornLength: number,
       plateParams.thickness
     );
   } else {
-    // Circular plate with horn exit opening - size based on horn mouth + margin
+    // Circular plate with horn exit opening - size based on horn mouth + 20mm
     const hornExitRadius = hornParams.roundMouth ? 
       hornParams.mouthWidth / 2 :
       Math.max(hornParams.mouthWidth, hornParams.mouthHeight || hornParams.mouthWidth) / 2;
-    const margin = hornExitRadius * 0.6; // 60% margin around exit
     
-    const outerRadius = plateParams.diameter ? (plateParams.diameter / 2) : (hornExitRadius + margin);
+    const outerRadius = plateParams.useManualSize ? 
+      (plateParams.diameter ? (plateParams.diameter / 2) : (hornExitRadius + 20)) : 
+      (hornExitRadius + 20);
     const innerRadius = hornExitRadius;
     
     baseGeometry = createRingGeometry(outerRadius, innerRadius, plateParams.thickness);

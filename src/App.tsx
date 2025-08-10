@@ -28,7 +28,14 @@ function App() {
 
   // Event handlers for parameter updates
   const handleHornParamsChange = useCallback((hornParams: typeof appState.hornParams) => {
-    setAppState(prev => ({ ...prev, hornParams }));
+    setAppState(prev => ({ 
+      ...prev, 
+      hornParams,
+      plateParams: {
+        ...prev.plateParams,
+        type: hornParams.roundMouth ? 'circle' : 'rect'
+      }
+    }));
   }, []);
 
   const handlePlateParamsChange = useCallback((plateParams: typeof appState.plateParams) => {

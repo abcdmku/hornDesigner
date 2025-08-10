@@ -32,7 +32,8 @@ export const DEFAULT_PLATE_PARAMS = {
   thickness: 6,
   boltCount: 8,
   boltHoleDiameter: 6,
-  boltCircleDiameter: 200
+  boltCircleDiameter: 200,
+  useManualSize: false
 };
 
 // Default values for driver mount

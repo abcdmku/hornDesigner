@@ -242,84 +242,88 @@ export default function ParameterSidebar({
               showMountingPlate ? 'pt-2' : 'pt-0'
             }`}>
               
-              {/* Plate Type */}
+              {/* Plate Size Control */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Plate Type
+                Plate Size
               </label>
-              <div className="flex space-x-1">
+              <div className="flex space-x-1 mb-3">
                 <button
                   type="button"
-                  onClick={() => onPlateParamsChange({ ...plateParams, type: 'circle' })}
+                  onClick={() => onPlateParamsChange({ ...plateParams, useManualSize: false })}
                   className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                    plateParams.type === 'circle'
+                    !plateParams.useManualSize
                       ? 'glass-button text-white'
                       : 'text-gray-400 hover:text-gray-300 hover:bg-white/5'
                   }`}
                 >
-                  Circle
+                  Auto (+20mm)
                 </button>
                 <button
                   type="button"
-                  onClick={() => onPlateParamsChange({ ...plateParams, type: 'rect' })}
+                  onClick={() => onPlateParamsChange({ ...plateParams, useManualSize: true })}
                   className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                    plateParams.type === 'rect'
+                    plateParams.useManualSize
                       ? 'glass-button text-white'
                       : 'text-gray-400 hover:text-gray-300 hover:bg-white/5'
                   }`}
                 >
-                  Rectangle
+                  Manual
                 </button>
               </div>
             </div>
 
-            {/* Plate Dimensions */}
-            {plateParams.type === 'circle' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Diameter (mm)
-                </label>
-                <input
-                  type="number"
-                  value={plateParams.diameter || 250}
-                  onChange={(e) => onPlateParamsChange({ 
-                    ...plateParams, 
-                    diameter: Number(e.target.value) 
-                  })}
-                  className="w-full px-4 py-2.5 glass-input rounded-lg text-white outline-none placeholder-gray-400"
-                />
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Width (mm)
-                  </label>
-                  <input
-                    type="number"
-                    value={plateParams.width || 250}
-                    onChange={(e) => onPlateParamsChange({ 
-                      ...plateParams, 
-                      width: Number(e.target.value) 
-                    })}
-                    className="w-full px-4 py-2.5 glass-input rounded-lg text-white outline-none placeholder-gray-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Height (mm)
-                  </label>
-                  <input
-                    type="number"
-                    value={plateParams.height || 250}
-                    onChange={(e) => onPlateParamsChange({ 
-                      ...plateParams, 
-                      height: Number(e.target.value) 
-                    })}
-                    className="w-full px-4 py-2.5 glass-input rounded-lg text-white outline-none placeholder-gray-400"
-                  />
-                </div>
-              </div>
+            {/* Plate Dimensions - only show when manual mode enabled */}
+            {plateParams.useManualSize && (
+              <>
+                {hornParams.roundMouth ? (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                      Diameter (mm)
+                    </label>
+                    <input
+                      type="number"
+                      value={plateParams.diameter || (hornParams.mouthWidth + 40)}
+                      onChange={(e) => onPlateParamsChange({ 
+                        ...plateParams, 
+                        diameter: Number(e.target.value) 
+                      })}
+                      className="w-full px-4 py-2.5 glass-input rounded-lg text-white outline-none placeholder-gray-400"
+                    />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">
+                        Width (mm)
+                      </label>
+                      <input
+                        type="number"
+                        value={plateParams.width || (hornParams.mouthWidth + 40)}
+                        onChange={(e) => onPlateParamsChange({ 
+                          ...plateParams, 
+                          width: Number(e.target.value) 
+                        })}
+                        className="w-full px-4 py-2.5 glass-input rounded-lg text-white outline-none placeholder-gray-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">
+                        Height (mm)
+                      </label>
+                      <input
+                        type="number"
+                        value={plateParams.height || ((hornParams.mouthHeight || hornParams.mouthWidth) + 40)}
+                        onChange={(e) => onPlateParamsChange({ 
+                          ...plateParams, 
+                          height: Number(e.target.value) 
+                        })}
+                        className="w-full px-4 py-2.5 glass-input rounded-lg text-white outline-none placeholder-gray-400"
+                      />
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             {/* Plate Thickness */}
