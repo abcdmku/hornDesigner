@@ -76,18 +76,35 @@ export function createRectangularBoltPattern(
     const topBottomLength = availableWidth;
     const leftRightLength = availableHeight;
     
-    // Determine how many bolts to add on each edge based purely on dimensions
-    const topBottomBolts = Math.max(0, Math.floor(topBottomLength / targetSpacing) - 1);
-    const leftRightBolts = Math.max(0, Math.floor(leftRightLength / targetSpacing) - 1);
+    // Determine how many bolts each edge can accommodate based on spacing
+    const topBottomBoltsPerEdge = Math.max(0, Math.floor(topBottomLength / targetSpacing) - 1);
+    const leftRightBoltsPerEdge = Math.max(0, Math.floor(leftRightLength / targetSpacing) - 1);
     
-    // Use actual bolt counts based on dimensions only
-    let finalTopBottomBolts = topBottomBolts;
-    let finalLeftRightBolts = leftRightBolts;
+    // Calculate total bolts that would naturally fit
+    const naturalTotalBolts = 2 * topBottomBoltsPerEdge + 2 * leftRightBoltsPerEdge;
     
-    // Add bolts on top edge (between top-left and top-right corners)
-    if (finalTopBottomBolts > 0 && positions.length < boltCount) {
-      const spacing = availableWidth / (finalTopBottomBolts + 1);
-      for (let i = 1; i <= finalTopBottomBolts && positions.length < boltCount; i++) {
+    // Distribute remaining bolts evenly across edges
+    let actualTopBottomBolts = topBottomBoltsPerEdge;
+    let actualLeftRightBolts = leftRightBoltsPerEdge;
+    
+    if (remainingBolts < naturalTotalBolts) {
+      // Need to reduce bolts proportionally
+      const reductionFactor = remainingBolts / naturalTotalBolts;
+      actualTopBottomBolts = Math.floor(topBottomBoltsPerEdge * reductionFactor);
+      actualLeftRightBolts = Math.floor(leftRightBoltsPerEdge * reductionFactor);
+    } else if (remainingBolts > naturalTotalBolts) {
+      // Need to add extra bolts evenly
+      const extraBolts = remainingBolts - naturalTotalBolts;
+      const totalEdges = 4;
+      const extraPerEdge = Math.floor(extraBolts / totalEdges);
+      actualTopBottomBolts += extraPerEdge;
+      actualLeftRightBolts += extraPerEdge;
+    }
+    
+    // Add bolts on top edge
+    if (actualTopBottomBolts > 0) {
+      const spacing = availableWidth / (actualTopBottomBolts + 1);
+      for (let i = 1; i <= actualTopBottomBolts; i++) {
         positions.push({
           x: -availableWidth / 2 + i * spacing,
           y: availableHeight / 2
@@ -95,10 +112,10 @@ export function createRectangularBoltPattern(
       }
     }
     
-    // Add bolts on right edge (between top-right and bottom-right corners)
-    if (finalLeftRightBolts > 0 && positions.length < boltCount) {
-      const spacing = availableHeight / (finalLeftRightBolts + 1);
-      for (let i = 1; i <= finalLeftRightBolts && positions.length < boltCount; i++) {
+    // Add bolts on right edge
+    if (actualLeftRightBolts > 0) {
+      const spacing = availableHeight / (actualLeftRightBolts + 1);
+      for (let i = 1; i <= actualLeftRightBolts; i++) {
         positions.push({
           x: availableWidth / 2,
           y: availableHeight / 2 - i * spacing
@@ -106,10 +123,10 @@ export function createRectangularBoltPattern(
       }
     }
     
-    // Add bolts on bottom edge (between bottom-right and bottom-left corners)
-    if (finalTopBottomBolts > 0 && positions.length < boltCount) {
-      const spacing = availableWidth / (finalTopBottomBolts + 1);
-      for (let i = 1; i <= finalTopBottomBolts && positions.length < boltCount; i++) {
+    // Add bolts on bottom edge
+    if (actualTopBottomBolts > 0) {
+      const spacing = availableWidth / (actualTopBottomBolts + 1);
+      for (let i = 1; i <= actualTopBottomBolts; i++) {
         positions.push({
           x: availableWidth / 2 - i * spacing,
           y: -availableHeight / 2
@@ -117,10 +134,10 @@ export function createRectangularBoltPattern(
       }
     }
     
-    // Add bolts on left edge (between bottom-left and top-left corners)
-    if (finalLeftRightBolts > 0 && positions.length < boltCount) {
-      const spacing = availableHeight / (finalLeftRightBolts + 1);
-      for (let i = 1; i <= finalLeftRightBolts && positions.length < boltCount; i++) {
+    // Add bolts on left edge
+    if (actualLeftRightBolts > 0) {
+      const spacing = availableHeight / (actualLeftRightBolts + 1);
+      for (let i = 1; i <= actualLeftRightBolts; i++) {
         positions.push({
           x: -availableWidth / 2,
           y: -availableHeight / 2 + i * spacing
