@@ -481,3 +481,21 @@ pnpm format         # Format code
 * Prisma → [https://www.prisma.io](https://www.prisma.io)
 * Vitest → [https://vitest.dev](https://vitest.dev)
 * Playwright → [https://playwright.dev](https://playwright.dev)
+
+---
+
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+
+## **Git Commit Policy**
+ALWAYS commit changes after completing each task. Use meaningful commit messages following the format: `type(scope): description`. Examples:
+- `feat(ui): add dark mode toggle`
+- `fix(api): resolve authentication error`
+- `refactor(utils): simplify date formatting`
+
+Keep commit messages minimal and focused. Do not add "Generated with Claude Code" or co-author attribution.
+
+After completing any task that involves file changes, immediately create a git commit with an appropriate message describing what was accomplished.
