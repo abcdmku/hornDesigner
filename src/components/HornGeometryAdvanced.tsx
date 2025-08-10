@@ -54,7 +54,7 @@ export default function HornGeometryAdvanced({
 
 // Optimized hollow horn using LatheGeometry with closed profile
 function buildHollowHornOptimized(params: HornProfileParams): THREE.BufferGeometry {
-  const { throatDiameter, mouthWidth, length, flareType, segments, wallThickness } = params;
+  const { throatDiameter, mouthWidth, length, flareType, segments: _segments, wallThickness } = params;
   
   const points: THREE.Vector2[] = [];
   const steps = 25; // Balanced for performance

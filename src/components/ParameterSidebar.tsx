@@ -364,23 +364,25 @@ export default function ParameterSidebar({
             </div>
 
             {/* Bolt Settings */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Bolt Count
-                </label>
-                <input
-                  type="number"
-                  min="3"
-                  max="12"
-                  value={plateParams.boltCount}
-                  onChange={(e) => onPlateParamsChange({ 
-                    ...plateParams, 
-                    boltCount: Number(e.target.value) 
-                  })}
-                  className="w-full px-4 py-2.5 glass-input rounded-lg text-white outline-none placeholder-gray-400"
-                />
-              </div>
+            <div className={`grid gap-3 ${plateParams.type === 'rect' ? 'grid-cols-1' : 'grid-cols-2'}`}>
+              {plateParams.type === 'circle' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Bolt Count
+                  </label>
+                  <input
+                    type="number"
+                    min="3"
+                    max="12"
+                    value={plateParams.boltCount}
+                    onChange={(e) => onPlateParamsChange({ 
+                      ...plateParams, 
+                      boltCount: Number(e.target.value) 
+                    })}
+                    className="w-full px-4 py-2.5 glass-input rounded-lg text-white outline-none placeholder-gray-400"
+                  />
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">
                   Bolt Hole Ø (mm)

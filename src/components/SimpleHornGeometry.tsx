@@ -1,7 +1,7 @@
 import { useMemo, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { HornProfileParams, MountPlateParams, DriverMountParams } from '../types';
-import { calculateRadii, createBoltHoles, createRingGeometry, createRectangularRingGeometry, applyCsgOperations, createRectangularBoltPattern, interpolateCrossSection, generateCrossSectionVertices, generateSectionFaces } from './GeometryUtils';
+import { calculateRadii, createBoltHoles, createRingGeometry, createRectangularRingGeometry, applyCsgOperations, createRectangularBoltPattern, calculateRecommendedBoltCount, interpolateCrossSection, generateCrossSectionVertices, generateSectionFaces } from './GeometryUtils';
 
 interface SimpleHornGeometryProps {
   hornParams: HornProfileParams;
@@ -144,7 +144,7 @@ export default function SimpleHornGeometry({ hornParams, plateParams, driverPara
 
 // Create circular horn geometry (hollow)
 function createCircularHornGeometry(params: HornProfileParams): THREE.BufferGeometry {
-  const { throatDiameter, mouthWidth, length, flareType, segments, wallThickness } = params;
+  const { throatDiameter, mouthWidth, length, flareType, segments: _segments, wallThickness } = params;
   
   // Create points for the horn profile (outer wall)
   const outerPoints: THREE.Vector2[] = [];
@@ -432,10 +432,18 @@ function createPlateWithHoles(plateParams: MountPlateParams, hornLength: number,
         (plateParams.height || ((hornParams.mouthHeight || hornParams.mouthWidth) + margin * 2)) : 
         ((hornParams.mouthHeight || hornParams.mouthWidth) + margin * 2);
       
+      // Auto-calculate optimal bolt count for rectangular plates
+      const optimalBoltCount = calculateRecommendedBoltCount(
+        plateWidth,
+        plateHeight,
+        margin / 2,
+        plateParams.maxBoltSpacing || 150
+      );
+      
       const rectBoltPositions = createRectangularBoltPattern(
         plateWidth,
         plateHeight,
-        plateParams.boltCount || 4,
+        optimalBoltCount,
         plateParams.boltHoleDiameter || 6,
         margin / 2, // Place bolts in center of margin
         plateParams.maxBoltSpacing || 150
@@ -464,9 +472,7 @@ function createPlateWithHoles(plateParams: MountPlateParams, hornLength: number,
         Math.max(hornParams.mouthWidth, hornParams.mouthHeight || hornParams.mouthWidth) / 2;
       
       const margin = plateParams.autoMargin || 20;
-      const plateRadius = plateParams.useManualSize ? 
-        (plateParams.diameter ? (plateParams.diameter / 2) : (hornExitRadius + margin)) : 
-        (hornExitRadius + margin);
+      // Note: plate radius calculation removed as it's not needed for bolt positioning
       
       // Place bolt circle in center of margin
       const boltCircleRadius = hornExitRadius + (margin / 2);

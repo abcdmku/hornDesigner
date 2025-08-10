@@ -44,7 +44,7 @@ export function createRectangularBoltPattern(
   width: number,
   height: number,
   boltCount: number,
-  boltDiameter: number,
+  _boltDiameter: number,
   margin: number = 10,
   maxSpacing: number = 150
 ): Array<{ x: number; y: number }> {
