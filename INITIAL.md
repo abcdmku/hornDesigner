@@ -2,11 +2,9 @@
 
  I am building a **client-side-only web app** using **React 19, Tailwind CSS, and react-three-fiber (R3F)** to let users design and preview audio horns (round or rectangular) with various expansion profiles, mounting plates, and compression driver flanges.
 
- I already have a horn modeling library with these functions:
+ I already have a horn modeling example with these functions in the examples folder named hornLib.ts I will need this fully flushed out.
 
- ```ts
- import { generateHornProfile, generateMountingFlangeGeometry, generateDriverMountGeometry } from "./hornLib";
- ```
+ Example for how to create the Horn Lib:
 
  * `generateHornProfile(params)` → Returns `THREE.BufferGeometry` for the horn body based on user params (mouth/throat size, length, expansion type, round/rectangular cross-section).
  * `generateMountingFlangeGeometry(params)` → Returns `THREE.BufferGeometry` for the mounting plate, with bolt holes.

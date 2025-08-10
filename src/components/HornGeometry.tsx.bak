@@ -1,0 +1,99 @@
+import { useEffect, useRef, useMemo } from 'react';
+import * as THREE from 'three';
+import { buildHornAssembly } from '../lib/hornLib';
+import { HornProfileParams, MountPlateParams, DriverMountParams } from '../types';
+
+interface HornGeometryProps {
+  hornParams: HornProfileParams;
+  plateParams: MountPlateParams;
+  driverParams: DriverMountParams;
+}
+
+// PERFORMANCE: Use React.memo for geometry components
+export default function HornGeometry({ hornParams, plateParams, driverParams }: HornGeometryProps) {
+  const meshRef = useRef<THREE.Mesh>(null);
+
+  // PATTERN: useMemo for expensive geometry generation
+  const hornMesh = useMemo(() => {
+    try {
+      // INTEGRATE: hornLib functions with R3F mesh rendering
+      // GOTCHA: Always call updateMatrix() is handled inside buildHornAssembly
+      const mesh = buildHornAssembly(hornParams, plateParams, driverParams);
+      
+      // Ensure the mesh has proper material
+      if (!mesh.material || Array.isArray(mesh.material)) {
+        mesh.material = new THREE.MeshStandardMaterial({ 
+          color: 0x666666,
+          metalness: 0.1,
+          roughness: 0.8
+        });
+      }
+      
+      return mesh;
+    } catch (error) {
+      console.error('Error generating horn geometry:', error);
+      // Fallback to a simple box geometry
+      const fallbackGeometry = new THREE.BoxGeometry(100, 100, 100);
+      const fallbackMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+      return new THREE.Mesh(fallbackGeometry, fallbackMaterial);
+    }
+  }, [hornParams, plateParams, driverParams]);
+
+  // PATTERN: useEffect to regenerate geometry when params change
+  // PERFORMANCE: Dispose of old geometries to prevent memory leaks
+  useEffect(() => {
+    if (meshRef.current && hornMesh) {
+      // Dispose of old geometry if it exists
+      if (meshRef.current.geometry) {
+        meshRef.current.geometry.dispose();
+      }
+      
+      // Dispose of old material if it exists
+      if (meshRef.current.material) {
+        if (Array.isArray(meshRef.current.material)) {
+          meshRef.current.material.forEach(material => material.dispose());
+        } else {
+          meshRef.current.material.dispose();
+        }
+      }
+      
+      // Update geometry and material
+      meshRef.current.geometry = hornMesh.geometry;
+      meshRef.current.material = hornMesh.material;
+      
+      // Center the geometry
+      meshRef.current.geometry.computeBoundingBox();
+      if (meshRef.current.geometry.boundingBox) {
+        const center = new THREE.Vector3();
+        meshRef.current.geometry.boundingBox.getCenter(center);
+        meshRef.current.geometry.translate(-center.x, -center.y, -center.z);
+      }
+    }
+    
+    // Cleanup function
+    return () => {
+      if (hornMesh) {
+        hornMesh.geometry.dispose();
+        if (hornMesh.material) {
+          if (Array.isArray(hornMesh.material)) {
+            hornMesh.material.forEach(material => material.dispose());
+          } else {
+            hornMesh.material.dispose();
+          }
+        }
+      }
+    };
+  }, [hornMesh]);
+
+  return (
+    <group>
+      <mesh
+        ref={meshRef}
+        castShadow
+        receiveShadow
+      >
+        {/* Geometry and material are set via useEffect */}
+      </mesh>
+    </group>
+  );
+}

@@ -1,0 +1,180 @@
+import { STLExporter } from 'three/addons/exporters/STLExporter.js';
+import { saveAs } from 'file-saver';
+import * as THREE from 'three';
+import { buildHornAssembly } from '../lib/hornLib';
+import { HornProfileParams, MountPlateParams, DriverMountParams } from '../types';
+
+/**
+ * Export horn geometry as STL file
+ * USE: Official Three.js STLExporter
+ * PATTERN: Export merged geometry as binary STL
+ */
+export function exportHornToSTL(
+  hornParams: HornProfileParams,
+  plateParams: MountPlateParams,
+  driverParams: DriverMountParams,
+  filename: string = 'horn_assembly.stl'
+): void {
+  try {
+    // GOTCHA: Ensure geometry is merged and manifold before export
+    // The buildHornAssembly function already handles CSG merging
+    const hornMesh = buildHornAssembly(hornParams, plateParams, driverParams);
+    
+    // CRITICAL: Always call updateMatrix() before export operations
+    hornMesh.updateMatrix();
+    
+    // Create STL exporter instance
+    const exporter = new STLExporter();
+    
+    // PATTERN: Use binary format for smaller file size
+    const options = { binary: true };
+    
+    // Parse the mesh and generate STL encoded output
+    const result = exporter.parse(hornMesh, options);
+    
+    // Create blob from the binary data
+    let blob: Blob;
+    if (result instanceof ArrayBuffer) {
+      blob = new Blob([result], { type: 'application/octet-stream' });
+    } else if (result instanceof DataView) {
+      blob = new Blob([result.buffer as ArrayBuffer], { type: 'application/octet-stream' });
+    } else {
+      // Fallback to text format if binary failed
+      blob = new Blob([result as string], { type: 'text/plain' });
+    }
+    
+    // Trigger download with filename
+    saveAs(blob, filename);
+    
+    console.log(`STL export successful: ${filename}`);
+    
+    // Cleanup: dispose of temporary geometry
+    hornMesh.geometry.dispose();
+    if (hornMesh.material) {
+      if (Array.isArray(hornMesh.material)) {
+        hornMesh.material.forEach(material => material.dispose());
+      } else {
+        hornMesh.material.dispose();
+      }
+    }
+    
+  } catch (error) {
+    console.error('STL export failed:', error);
+    throw new Error(`Failed to export STL: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Export an existing THREE.js mesh to STL
+ * Useful when you already have a constructed mesh
+ */
+export function exportMeshToSTL(
+  mesh: THREE.Mesh,
+  filename: string = 'export.stl'
+): void {
+  try {
+    // Ensure the mesh matrix is current
+    mesh.updateMatrix();
+    
+    const exporter = new STLExporter();
+    const options = { binary: true };
+    
+    const result = exporter.parse(mesh, options);
+    
+    let blob: Blob;
+    if (result instanceof ArrayBuffer) {
+      blob = new Blob([result], { type: 'application/octet-stream' });
+    } else if (result instanceof DataView) {
+      blob = new Blob([result.buffer as ArrayBuffer], { type: 'application/octet-stream' });
+    } else {
+      blob = new Blob([result as string], { type: 'text/plain' });
+    }
+    
+    saveAs(blob, filename);
+    
+    console.log(`STL export successful: ${filename}`);
+    
+  } catch (error) {
+    console.error('STL export failed:', error);
+    throw new Error(`Failed to export STL: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Validate geometry before STL export
+ * Checks for common issues that might cause export problems
+ */
+export function validateGeometryForSTL(mesh: THREE.Mesh): boolean {
+  if (!mesh.geometry) {
+    console.warn('Mesh has no geometry');
+    return false;
+  }
+  
+  const geometry = mesh.geometry;
+  
+  // Check if geometry has vertices
+  const positionAttribute = geometry.getAttribute('position');
+  if (!positionAttribute || positionAttribute.count === 0) {
+    console.warn('Geometry has no vertices');
+    return false;
+  }
+  
+  // Check if geometry has faces (triangles)
+  const vertexCount = positionAttribute.count;
+  if (vertexCount % 3 !== 0) {
+    console.warn('Geometry vertex count is not divisible by 3 (not triangulated)');
+    return false;
+  }
+  
+  // Check for NaN or infinite values
+  const positions = positionAttribute.array;
+  for (let i = 0; i < positions.length; i++) {
+    if (!isFinite(positions[i])) {
+      console.warn('Geometry contains NaN or infinite values');
+      return false;
+    }
+  }
+  
+  // Compute bounding box to check for reasonable size
+  if (!geometry.boundingBox) {
+    geometry.computeBoundingBox();
+  }
+  
+  if (geometry.boundingBox) {
+    const size = new THREE.Vector3();
+    geometry.boundingBox.getSize(size);
+    
+    // Check if size is reasonable (not too small or too large)
+    const maxDimension = Math.max(size.x, size.y, size.z);
+    const minDimension = Math.min(size.x, size.y, size.z);
+    
+    if (maxDimension < 0.001) {
+      console.warn('Geometry is extremely small, may not export properly');
+      return false;
+    }
+    
+    if (maxDimension > 100000) {
+      console.warn('Geometry is extremely large, may cause export issues');
+      return false;
+    }
+    
+    if (minDimension <= 0) {
+      console.warn('Geometry has zero or negative dimensions');
+      return false;
+    }
+  }
+  
+  return true;
+}
+
+/**
+ * Generate filename with timestamp
+ */
+export function generateSTLFilename(baseName: string = 'horn_assembly'): string {
+  const timestamp = new Date().toISOString()
+    .replace(/[:.]/g, '-')
+    .replace('T', '_')
+    .substring(0, 19);
+  
+  return `${baseName}_${timestamp}.stl`;
+}

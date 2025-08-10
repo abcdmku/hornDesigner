@@ -1,0 +1,171 @@
+import * as THREE from 'three';
+import { MaterialType, HornProfileParams, MountPlateParams, DriverMountParams } from '../types';
+
+interface CostCalculationResult {
+  volume: number; // mm³
+  mass: number; // grams
+  materialCost: number; // $
+  laborCost: number; // $
+  margin: number; // $
+  totalCost: number; // $
+}
+
+// Cost calculation parameters
+const FILL_RATIO = 0.15; // 15% infill for 3D printing
+const LABOR_COST_BASE = 5.0; // $5 base labor cost
+const LABOR_COST_PER_HOUR = 25.0; // $25/hour
+const MARGIN_PERCENTAGE = 0.3; // 30% margin
+
+/**
+ * Calculate estimated volume based on horn parameters
+ * Since we don't have access to the actual geometry here, we'll estimate
+ * based on the horn dimensions and complexity
+ */
+function estimateHornVolume(
+  hornParams: HornProfileParams, 
+  plateParams: MountPlateParams,
+  driverParams: DriverMountParams
+): number {
+  // Estimate horn body volume
+  const avgRadius = (hornParams.throatDiameter / 2 + hornParams.mouthWidth / 2) / 2;
+  const hornVolume = Math.PI * avgRadius * avgRadius * hornParams.length * 0.7; // Hollow factor
+  
+  // Estimate mounting plate volume
+  let plateVolume = 0;
+  if (plateParams.type === 'circle') {
+    const plateRadius = (plateParams.diameter || 250) / 2;
+    plateVolume = Math.PI * plateRadius * plateRadius * plateParams.thickness;
+  } else {
+    const width = plateParams.width || 250;
+    const height = plateParams.height || 250;
+    plateVolume = width * height * plateParams.thickness;
+  }
+  
+  // Subtract bolt holes from plate
+  const boltHoleVolume = plateParams.boltCount * 
+    Math.PI * Math.pow(plateParams.boltHoleDiameter / 2, 2) * plateParams.thickness;
+  plateVolume -= boltHoleVolume;
+  
+  // Estimate driver flange volume
+  const flangeRadius = driverParams.throatDiameter / 2;
+  let flangeVolume = Math.PI * flangeRadius * flangeRadius * driverParams.flangeThickness;
+  
+  // Subtract driver bolt holes if bolt-on type
+  if (driverParams.type === 'bolt-on' && driverParams.boltCount) {
+    const driverBoltHoleVolume = driverParams.boltCount * 
+      Math.PI * Math.pow((driverParams.boltHoleDiameter || 4) / 2, 2) * driverParams.flangeThickness;
+    flangeVolume -= driverBoltHoleVolume;
+  }
+  
+  return hornVolume + plateVolume + flangeVolume;
+}
+
+/**
+ * Calculate estimated print time in hours based on volume and complexity
+ */
+function estimatePrintTime(volume: number, complexity: number = 1.0): number {
+  // Base print time: ~1 hour per 10,000 mm³ of material
+  // Complexity factor accounts for support structures, layer changes, etc.
+  const basePrintTime = (volume * FILL_RATIO) / 10000; // hours
+  return basePrintTime * complexity;
+}
+
+/**
+ * Calculate total cost including materials, labor, and margin
+ */
+export function calculateCost(
+  hornParams: HornProfileParams,
+  plateParams: MountPlateParams, 
+  driverParams: DriverMountParams,
+  material: MaterialType
+): CostCalculationResult {
+  // FORMULA: volume = geometry estimation
+  const totalVolume = estimateHornVolume(hornParams, plateParams, driverParams);
+  
+  // Account for 3D printing infill
+  const materialVolume = totalVolume * FILL_RATIO;
+  
+  // FORMULA: mass = volume * material.density (convert mm³ to cm³ first)
+  const mass = (materialVolume / 1000) * material.density; // grams
+  
+  // FORMULA: material cost = mass * material.costPerGram
+  const materialCost = mass * material.costPerGram;
+  
+  // Estimate complexity based on horn parameters
+  const complexity = 1.0 + 
+    (hornParams.segments - 16) / 48 + // Higher segment count = more complex
+    (plateParams.boltCount - 4) / 8 + // More bolts = more complex
+    (driverParams.type === 'bolt-on' ? 0.2 : 0); // Bolt-on slightly more complex
+  
+  const printTime = estimatePrintTime(materialVolume, complexity);
+  
+  // FORMULA: labor cost = base + time * hourly rate
+  const laborCost = LABOR_COST_BASE + (printTime * LABOR_COST_PER_HOUR);
+  
+  // Calculate subtotal
+  const subtotal = materialCost + laborCost;
+  
+  // FORMULA: margin
+  const margin = subtotal * MARGIN_PERCENTAGE;
+  
+  // FORMULA: total cost
+  const totalCost = subtotal + margin;
+  
+  return {
+    volume: totalVolume,
+    mass,
+    materialCost,
+    laborCost,
+    margin,
+    totalCost
+  };
+}
+
+/**
+ * Calculate cost from a THREE.js geometry object
+ * This is more accurate than estimation but requires the geometry to be built
+ */
+export function calculateCostFromGeometry(
+  geometry: THREE.BufferGeometry,
+  material: MaterialType
+): CostCalculationResult {
+  // Calculate actual volume from geometry
+  let volume = 0;
+  
+  // Compute bounding box if not already computed
+  if (!geometry.boundingBox) {
+    geometry.computeBoundingBox();
+  }
+  
+  if (geometry.boundingBox) {
+    const size = new THREE.Vector3();
+    geometry.boundingBox.getSize(size);
+    // Approximate volume as bounding box * fill factor
+    // This is a rough approximation - for true volume we'd need more complex calculations
+    volume = size.x * size.y * size.z * 0.3; // Assume 30% fill of bounding box
+  }
+  
+  // Apply infill ratio
+  const materialVolume = volume * FILL_RATIO;
+  
+  // Convert to grams and calculate cost
+  const mass = (materialVolume / 1000) * material.density;
+  const materialCost = mass * material.costPerGram;
+  
+  // Simple labor cost calculation
+  const printTime = estimatePrintTime(materialVolume);
+  const laborCost = LABOR_COST_BASE + (printTime * LABOR_COST_PER_HOUR);
+  
+  const subtotal = materialCost + laborCost;
+  const margin = subtotal * MARGIN_PERCENTAGE;
+  const totalCost = subtotal + margin;
+  
+  return {
+    volume,
+    mass,
+    materialCost,
+    laborCost,
+    margin,
+    totalCost
+  };
+}
