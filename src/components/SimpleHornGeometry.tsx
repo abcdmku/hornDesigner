@@ -180,7 +180,7 @@ function createCircularHornGeometry(params: HornProfileParams): THREE.BufferGeom
   }
   
   // Create the lathe geometry from the points
-  const geometry = new THREE.LatheGeometry(outerPoints, 128);
+  const geometry = new THREE.LatheGeometry(outerPoints, 32);
   geometry.rotateX(Math.PI / 2);
   
   return geometry;
@@ -431,7 +431,7 @@ function createPlateWithHoles(plateParams: MountPlateParams, hornLength: number,
         (plateParams.boltHoleDiameter || 6) / 2,
         (plateParams.boltHoleDiameter || 6) / 2,
         plateParams.thickness * 2.0, // Make holes twice as long to ensure they cut through
-        128 // High-quality segments
+        16 // Balanced segments
       );
       // Rotate to make holes go through flat flanges along Z axis
       holeGeom.rotateX(Math.PI / 2);
@@ -487,7 +487,7 @@ function createDriverWithHoles(driverParams: DriverMountParams): THREE.BufferGeo
   const thickness = driverParams.flangeThickness;
   
   // Create ring geometry for flange with throat opening
-  const baseGeometry = createRingGeometry(outerRadius, innerRadius, thickness, 128);
+  const baseGeometry = createRingGeometry(outerRadius, innerRadius, thickness, 32);
   
   // Position flush with horn throat at z=0, extending towards horn exit
   const driverZ = 0;

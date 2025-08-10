@@ -90,7 +90,7 @@ function buildHollowHornOptimized(params: HornProfileParams): THREE.BufferGeomet
     points.push(new THREE.Vector2(innerRadius, z));
   }
   
-  const geometry = new THREE.LatheGeometry(points, 128);
+  const geometry = new THREE.LatheGeometry(points, 32);
   geometry.rotateX(Math.PI / 2);
   return geometry;
 }
@@ -106,7 +106,7 @@ function buildPlateWithCSGHoles(plateParams: MountPlateParams, hornLength: numbe
   const thickness = plateParams.thickness;
   
   // Create base plate
-  const plateGeom = new THREE.CylinderGeometry(radius, radius, thickness, 128);
+  const plateGeom = new THREE.CylinderGeometry(radius, radius, thickness, 32);
   plateGeom.rotateX(Math.PI / 2);
   plateGeom.translate(0, 0, hornLength + thickness / 2);
   
@@ -118,7 +118,7 @@ function buildPlateWithCSGHoles(plateParams: MountPlateParams, hornLength: numbe
     plateParams.boltHoleDiameter / 2,
     plateParams.boltHoleDiameter / 2,
     thickness * 1.1,
-    128 // High-quality segments for holes
+    16 // Balanced segments for holes
   );
   holeGeom.rotateX(Math.PI / 2);
   
@@ -154,7 +154,7 @@ function buildPlateSimple(plateParams: MountPlateParams, hornLength: number): TH
   const radius = (plateParams.diameter || 250) / 2;
   const thickness = plateParams.thickness;
   
-  const geometry = new THREE.CylinderGeometry(radius, radius, thickness, 128);
+  const geometry = new THREE.CylinderGeometry(radius, radius, thickness, 32);
   geometry.rotateX(Math.PI / 2);
   geometry.translate(0, 0, hornLength + thickness / 2);
   
@@ -167,7 +167,7 @@ function buildDriverWithCSGHoles(driverParams: DriverMountParams): THREE.BufferG
   const thickness = driverParams.flangeThickness;
   
   // Create base flange
-  const flangeGeom = new THREE.CylinderGeometry(radius, radius, thickness, 128);
+  const flangeGeom = new THREE.CylinderGeometry(radius, radius, thickness, 32);
   flangeGeom.rotateX(Math.PI / 2);
   flangeGeom.translate(0, 0, -thickness / 2);
   
@@ -179,7 +179,7 @@ function buildDriverWithCSGHoles(driverParams: DriverMountParams): THREE.BufferG
     driverParams.boltHoleDiameter / 2,
     driverParams.boltHoleDiameter / 2,
     thickness * 1.1,
-    128 // High-quality segments
+    16 // Balanced segments
   );
   holeGeom.rotateX(Math.PI / 2);
   
@@ -215,7 +215,7 @@ function buildDriverSimple(driverParams: DriverMountParams): THREE.BufferGeometr
   const radius = driverParams.throatDiameter / 2;
   const thickness = driverParams.flangeThickness;
   
-  const geometry = new THREE.CylinderGeometry(radius, radius, thickness, 128);
+  const geometry = new THREE.CylinderGeometry(radius, radius, thickness, 32);
   geometry.rotateX(Math.PI / 2);
   geometry.translate(0, 0, -thickness / 2);
   
