@@ -8,6 +8,7 @@ export interface HornProfileParams {
   flareType: 'exponential' | 'conical';
   roundMouth: boolean;          // true = circular horn
   segments: number;             // radial segments
+  wallThickness: number;        // mm - wall thickness for hollow horns
 }
 
 export interface MountPlateParams {
@@ -25,6 +26,7 @@ export interface MountPlateParams {
 export interface DriverMountParams {
   type: 'bolt-on';
   throatDiameter: number;       // mm
+  flangeDiameter: number;       // mm
   flangeThickness: number;      // mm
   boltCount: number;
   boltHoleDiameter: number;

@@ -27,7 +27,13 @@
       "Bash(timeout 10 npm run dev)",
       "Bash(timeout 15 npm run dev)",
       "Bash(npm uninstall:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run lint)",
+      "Bash(node:*)",
+      "Bash(del validate-geometry.js)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

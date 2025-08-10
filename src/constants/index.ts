@@ -20,13 +20,14 @@ export const DEFAULT_HORN_PARAMS = {
   mouthHeight: 150,
   length: 300,
   flareType: 'exponential' as const,
-  roundMouth: true,
-  segments: 32
+  roundMouth: false,
+  segments: 32,
+  wallThickness: 2 // mm - default wall thickness for hollow horns
 };
 
 // Default values for mounting plate
 export const DEFAULT_PLATE_PARAMS = {
-  type: 'circle' as const,
+  type: 'rect' as const,
   diameter: 250,
   thickness: 6,
   boltCount: 8,
@@ -38,6 +39,7 @@ export const DEFAULT_PLATE_PARAMS = {
 export const DEFAULT_DRIVER_PARAMS = {
   type: 'bolt-on' as const,
   throatDiameter: 25.4,
+  flangeDiameter: 50.8,
   flangeThickness: 5,
   boltCount: 4,
   boltHoleDiameter: 4,

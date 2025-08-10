@@ -6,6 +6,8 @@ export interface AppState {
   plateParams: MountPlateParams;  
   driverParams: DriverMountParams;
   selectedMaterial: MaterialType;
+  showMountingPlate: boolean;
+  showDriverMount: boolean;
 }
 
 export interface MaterialType {

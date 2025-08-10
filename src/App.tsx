@@ -12,7 +12,9 @@ function App() {
     hornParams: DEFAULT_HORN_PARAMS,
     plateParams: DEFAULT_PLATE_PARAMS,
     driverParams: DEFAULT_DRIVER_PARAMS,
-    selectedMaterial: MATERIALS[0] // Default to PLA
+    selectedMaterial: MATERIALS[0], // Default to PLA
+    showMountingPlate: true,
+    showDriverMount: true
   });
 
   // Calculate cost in real-time (simplified for now)
@@ -41,6 +43,14 @@ function App() {
     setAppState(prev => ({ ...prev, selectedMaterial }));
   }, []);
 
+  const handleToggleMountingPlate = useCallback((showMountingPlate: boolean) => {
+    setAppState(prev => ({ ...prev, showMountingPlate }));
+  }, []);
+
+  const handleToggleDriverMount = useCallback((showDriverMount: boolean) => {
+    setAppState(prev => ({ ...prev, showDriverMount }));
+  }, []);
+
   // STL Export handler (temporarily disabled)
   const handleExportSTL = useCallback(() => {
     alert('STL export temporarily disabled while fixing geometry generation. Feature will be restored soon!');
@@ -54,10 +64,14 @@ function App() {
         plateParams={appState.plateParams}
         driverParams={appState.driverParams}
         selectedMaterial={appState.selectedMaterial}
+        showMountingPlate={appState.showMountingPlate}
+        showDriverMount={appState.showDriverMount}
         onHornParamsChange={handleHornParamsChange}
         onPlateParamsChange={handlePlateParamsChange}
         onDriverParamsChange={handleDriverParamsChange}
         onMaterialChange={handleMaterialChange}
+        onToggleMountingPlate={handleToggleMountingPlate}
+        onToggleDriverMount={handleToggleDriverMount}
         estimatedCost={estimatedCost}
       />
 
@@ -99,6 +113,8 @@ function App() {
                 hornParams={appState.hornParams}
                 plateParams={appState.plateParams}
                 driverParams={appState.driverParams}
+                showMountingPlate={appState.showMountingPlate}
+                showDriverMount={appState.showDriverMount}
               />
             </Scene3D>
           </div>

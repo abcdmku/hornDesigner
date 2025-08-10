@@ -58,15 +58,16 @@ export default function Scene3D({ children }: Scene3DProps) {
         {/* Dark Grid for reference */}
         <Grid 
           position={[0, -200, 0]} 
-          args={[1000, 1000]} 
-          cellSize={50} 
-          sectionSize={200}
-          sectionThickness={1.5}
-          cellThickness={0.5}
+          args={[2000, 2000]} 
+          cellSize={25} 
+          sectionSize={100}
+          sectionThickness={2}
+          cellThickness={1}
           sectionColor="#333333"
           cellColor="#1a1a1a"
-          fadeDistance={800}
-          infiniteGrid={true}
+          fadeDistance={1500}
+          fadeStrength={1}
+          infiniteGrid={false}
         />
 
         {/* OrbitControls - FOLLOW PATTERN: Standard R3F Canvas with drei OrbitControls */}
