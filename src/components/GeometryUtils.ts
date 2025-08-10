@@ -39,62 +39,125 @@ export function createBoltHoles(
   return holes;
 }
 
-// Rectangle bolt positioning algorithm - corner-first, maximum spacing
+// Rectangle bolt positioning algorithm - corners + 150mm spacing
 export function createRectangularBoltPattern(
   width: number,
   height: number,
   boltCount: number,
-  boltDiameter: number
+  boltDiameter: number,
+  margin: number = 10
 ): Array<{ x: number; y: number }> {
   const positions: Array<{ x: number; y: number }> = [];
-  const margin = boltDiameter; // Minimum distance from edge
   
-  // Calculate available perimeter
+  // Calculate available dimensions with margin
   const availableWidth = width - 2 * margin;
   const availableHeight = height - 2 * margin;
   
-  if (boltCount <= 4) {
-    // For small bolt counts, use corners
-    const corners = [
-      { x: availableWidth / 2, y: availableHeight / 2 },     // Top-right
-      { x: -availableWidth / 2, y: availableHeight / 2 },    // Top-left
-      { x: -availableWidth / 2, y: -availableHeight / 2 },   // Bottom-left
-      { x: availableWidth / 2, y: -availableHeight / 2 }     // Bottom-right
-    ];
-    
-    return corners.slice(0, boltCount);
-  }
+  // Always start with corner bolts
+  const corners = [
+    { x: -availableWidth / 2, y: -availableHeight / 2 },   // Bottom-left
+    { x: availableWidth / 2, y: -availableHeight / 2 },    // Bottom-right
+    { x: availableWidth / 2, y: availableHeight / 2 },     // Top-right
+    { x: -availableWidth / 2, y: availableHeight / 2 }     // Top-left
+  ];
   
-  // For larger counts, distribute around perimeter starting with corners
-  const perimeter = 2 * availableWidth + 2 * availableHeight;
-  const spacing = perimeter / boltCount;
+  // Add corner bolts
+  positions.push(...corners);
   
-  for (let i = 0; i < boltCount; i++) {
-    const distance = i * spacing;
-    let x: number, y: number;
+  // Calculate how many additional bolts are needed
+  const remainingBolts = Math.max(0, boltCount - 4);
+  
+  if (remainingBolts > 0) {
+    // Calculate spacing needed for 150mm requirement
+    const targetSpacing = 150;
     
-    if (distance <= availableWidth) {
-      // Top edge
-      x = -availableWidth / 2 + distance;
-      y = availableHeight / 2;
-    } else if (distance <= availableWidth + availableHeight) {
-      // Right edge
-      x = availableWidth / 2;
-      y = availableHeight / 2 - (distance - availableWidth);
-    } else if (distance <= 2 * availableWidth + availableHeight) {
-      // Bottom edge
-      x = availableWidth / 2 - (distance - availableWidth - availableHeight);
-      y = -availableHeight / 2;
-    } else {
-      // Left edge
-      x = -availableWidth / 2;
-      y = -availableHeight / 2 + (distance - 2 * availableWidth - availableHeight);
+    // Calculate edge lengths
+    const topBottomLength = availableWidth;
+    const leftRightLength = availableHeight;
+    
+    // Determine how many bolts to add on each edge
+    const topBottomBolts = Math.max(0, Math.floor(topBottomLength / targetSpacing) - 1);
+    const leftRightBolts = Math.max(0, Math.floor(leftRightLength / targetSpacing) - 1);
+    
+    const totalEdgeBolts = 2 * topBottomBolts + 2 * leftRightBolts;
+    
+    // If we need more bolts than calculated, distribute them evenly
+    let finalTopBottomBolts = topBottomBolts;
+    let finalLeftRightBolts = leftRightBolts;
+    
+    if (remainingBolts > totalEdgeBolts) {
+      // Distribute extra bolts proportionally
+      const ratio = remainingBolts / totalEdgeBolts;
+      finalTopBottomBolts = Math.ceil(topBottomBolts * ratio);
+      finalLeftRightBolts = Math.ceil(leftRightBolts * ratio);
     }
     
-    positions.push({ x, y });
+    // Add bolts on top edge (between top-left and top-right corners)
+    if (finalTopBottomBolts > 0 && positions.length < boltCount) {
+      const spacing = availableWidth / (finalTopBottomBolts + 1);
+      for (let i = 1; i <= finalTopBottomBolts && positions.length < boltCount; i++) {
+        positions.push({
+          x: -availableWidth / 2 + i * spacing,
+          y: availableHeight / 2
+        });
+      }
+    }
+    
+    // Add bolts on right edge (between top-right and bottom-right corners)
+    if (finalLeftRightBolts > 0 && positions.length < boltCount) {
+      const spacing = availableHeight / (finalLeftRightBolts + 1);
+      for (let i = 1; i <= finalLeftRightBolts && positions.length < boltCount; i++) {
+        positions.push({
+          x: availableWidth / 2,
+          y: availableHeight / 2 - i * spacing
+        });
+      }
+    }
+    
+    // Add bolts on bottom edge (between bottom-right and bottom-left corners)
+    if (finalTopBottomBolts > 0 && positions.length < boltCount) {
+      const spacing = availableWidth / (finalTopBottomBolts + 1);
+      for (let i = 1; i <= finalTopBottomBolts && positions.length < boltCount; i++) {
+        positions.push({
+          x: availableWidth / 2 - i * spacing,
+          y: -availableHeight / 2
+        });
+      }
+    }
+    
+    // Add bolts on left edge (between bottom-left and top-left corners)
+    if (finalLeftRightBolts > 0 && positions.length < boltCount) {
+      const spacing = availableHeight / (finalLeftRightBolts + 1);
+      for (let i = 1; i <= finalLeftRightBolts && positions.length < boltCount; i++) {
+        positions.push({
+          x: -availableWidth / 2,
+          y: -availableHeight / 2 + i * spacing
+        });
+      }
+    }
   }
   
-  return positions;
+  return positions.slice(0, boltCount);
+}
+
+// Calculate recommended bolt count for rectangular mounting plates
+export function calculateRecommendedBoltCount(width: number, height: number, margin: number = 10): number {
+  const availableWidth = width - 2 * margin;
+  const availableHeight = height - 2 * margin;
+  const targetSpacing = 150;
+  
+  // Start with 4 corner bolts
+  let boltCount = 4;
+  
+  // Add bolts on horizontal edges (top and bottom)
+  const horizontalBolts = Math.max(0, Math.floor(availableWidth / targetSpacing) - 1);
+  boltCount += 2 * horizontalBolts; // Top and bottom edges
+  
+  // Add bolts on vertical edges (left and right)
+  const verticalBolts = Math.max(0, Math.floor(availableHeight / targetSpacing) - 1);
+  boltCount += 2 * verticalBolts; // Left and right edges
+  
+  return boltCount;
 }
 
 // Create ring geometry with ExtrudeGeometry (for flanges with openings)

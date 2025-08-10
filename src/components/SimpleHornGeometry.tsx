@@ -423,15 +423,21 @@ function createPlateWithHoles(plateParams: MountPlateParams, hornLength: number,
     let boltHoles: THREE.Mesh[];
     
     if (plateParams.type === 'rect') {
-      // Use rectangular bolt pattern for rectangular plates
-      const plateWidth = plateParams.width || (hornParams.mouthWidth + Math.max(hornParams.mouthWidth, hornParams.mouthHeight || hornParams.mouthWidth) * 0.8);
-      const plateHeight = plateParams.height || ((hornParams.mouthHeight || hornParams.mouthWidth) + Math.max(hornParams.mouthWidth, hornParams.mouthHeight || hornParams.mouthWidth) * 0.8);
+      // Use rectangular bolt pattern for rectangular plates - place bolts in center of margin
+      const margin = plateParams.autoMargin || 20;
+      const plateWidth = plateParams.useManualSize ? 
+        (plateParams.width || (hornParams.mouthWidth + margin * 2)) : 
+        (hornParams.mouthWidth + margin * 2);
+      const plateHeight = plateParams.useManualSize ? 
+        (plateParams.height || ((hornParams.mouthHeight || hornParams.mouthWidth) + margin * 2)) : 
+        ((hornParams.mouthHeight || hornParams.mouthWidth) + margin * 2);
       
       const rectBoltPositions = createRectangularBoltPattern(
         plateWidth,
         plateHeight,
         plateParams.boltCount || 4,
-        plateParams.boltHoleDiameter || 6
+        plateParams.boltHoleDiameter || 6,
+        margin / 2 // Place bolts in center of margin
       );
       
       // Create bolt holes at calculated positions
@@ -451,23 +457,25 @@ function createPlateWithHoles(plateParams: MountPlateParams, hornLength: number,
         boltHoles.push(new THREE.Mesh(holeClone, new THREE.MeshStandardMaterial()));
       });
     } else {
-      // Use circular bolt pattern for circular plates
-      const plateRadius = plateParams.diameter ? (plateParams.diameter / 2) : 
-        (Math.max(hornParams.mouthWidth, hornParams.mouthHeight || hornParams.mouthWidth) / 2 + 
-         Math.max(hornParams.mouthWidth, hornParams.mouthHeight || hornParams.mouthWidth) * 0.3);
-      const hornExitRadius = Math.max(hornParams.mouthWidth, hornParams.mouthHeight || hornParams.mouthWidth) / 2;
-      const boltCircleRadius = plateRadius - (plateParams.boltHoleDiameter || 6) / 2 - 5; // 5mm clearance from edge
+      // Use circular bolt pattern for circular plates - place bolts in center of margin
+      const hornExitRadius = hornParams.roundMouth ? 
+        hornParams.mouthWidth / 2 :
+        Math.max(hornParams.mouthWidth, hornParams.mouthHeight || hornParams.mouthWidth) / 2;
       
-      // Ensure bolt circle is well outside the horn exit opening
-      const minBoltCircleRadius = hornExitRadius + (plateParams.boltHoleDiameter || 6) + 10; // 10mm clearance from exit
-      const finalBoltCircleRadius = Math.max(boltCircleRadius, minBoltCircleRadius);
+      const margin = plateParams.autoMargin || 20;
+      const plateRadius = plateParams.useManualSize ? 
+        (plateParams.diameter ? (plateParams.diameter / 2) : (hornExitRadius + margin)) : 
+        (hornExitRadius + margin);
+      
+      // Place bolt circle in center of margin
+      const boltCircleRadius = hornExitRadius + (margin / 2);
       
       boltHoles = createBoltHoles(
         plateZ - plateParams.thickness / 2,
         {
           boltCount: plateParams.boltCount || 4,
           boltHoleDiameter: plateParams.boltHoleDiameter || 6,
-          boltCircleDiameter: finalBoltCircleRadius * 2
+          boltCircleDiameter: boltCircleRadius * 2
         },
         plateParams.thickness
       );

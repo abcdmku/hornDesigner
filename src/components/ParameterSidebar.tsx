@@ -396,21 +396,6 @@ export default function ParameterSidebar({
                 />
               </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Bolt Circle Ø (mm)
-              </label>
-              <input
-                type="number"
-                value={plateParams.boltCircleDiameter}
-                onChange={(e) => onPlateParamsChange({ 
-                  ...plateParams, 
-                  boltCircleDiameter: Number(e.target.value) 
-                })}
-                className="w-full px-4 py-2.5 glass-input rounded-lg text-white outline-none placeholder-gray-400"
-              />
-            </div>
           </div>
           </div>
         </div>
