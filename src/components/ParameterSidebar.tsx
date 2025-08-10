@@ -182,25 +182,6 @@ export default function ParameterSidebar({
               </div>
             </div>
 
-            {/* Segments */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Segments (Quality)
-              </label>
-              <input
-                type="range"
-                min="3"
-                max="64"
-                value={hornParams.segments}
-                onChange={(e) => onHornParamsChange({ 
-                  ...hornParams, 
-                  segments: Number(e.target.value) 
-                })}
-                className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer slider"
-              />
-              <div className="text-sm text-blue-300 mt-2 font-medium">{hornParams.segments} segments</div>
-            </div>
-
             {/* Wall Thickness */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
