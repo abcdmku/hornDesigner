@@ -14,7 +14,6 @@ interface ParameterSidebarProps {
   onMaterialChange: (material: MaterialType) => void;
   onToggleMountingPlate: (show: boolean) => void;
   onToggleDriverMount: (show: boolean) => void;
-  estimatedCost: number;
   performanceMode?: 'high' | 'medium' | 'low';
   onPerformanceModeChange?: (mode: 'high' | 'medium' | 'low') => void;
   showPerformanceMonitor?: boolean;
@@ -34,7 +33,6 @@ export default function ParameterSidebar({
   onMaterialChange,
   onToggleMountingPlate,
   onToggleDriverMount,
-  estimatedCost,
   performanceMode = 'high',
   onPerformanceModeChange,
   showPerformanceMonitor = false,
@@ -45,17 +43,12 @@ export default function ParameterSidebar({
       {/* Header */}
       <div className="p-6 border-b border-white/10">
         <div className="flex items-center space-x-3 mb-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 7.172V5L8 4z" />
-            </svg>
-          </div>
+          <img src="/logo-icon.svg" alt="Logo" className="w-12 h-12" />
           <div>
-            <h2 className="text-lg font-bold text-white">Horn Designer</h2>
-            <p className="text-sm text-gray-400">Pro Audio Design Tool</p>
+            <h2 className="text-2xl font-bold text-white">Horn Designer</h2>
+            <p className="text-sm text-gray-400">Professional Audio Design Tool</p>
           </div>
         </div>
-        <p className="text-xs text-gray-500">Configure your audio horn parameters</p>
       </div>
 
       {/* Scrollable Content */}
@@ -686,21 +679,6 @@ export default function ParameterSidebar({
         </div>
       </div>
 
-      {/* Cost Display Footer */}
-      <div className="border-t border-white/10 p-6 glass-section mx-6 mb-6">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-base font-medium text-gray-300">Estimated Cost</span>
-          <div className="px-3 py-1 bg-gradient-to-r from-green-500 to-blue-500 rounded-full">
-            <span className="text-lg font-bold text-white">
-              ${estimatedCost.toFixed(2)}
-            </span>
-          </div>
-        </div>
-        <div className="text-sm text-gray-400">
-          Material: <span className="text-blue-300 font-medium">{selectedMaterial.name}</span> • 
-          <span className="text-gray-500"> Density: {selectedMaterial.density} g/mm³</span>
-        </div>
-      </div>
     </div>
   );
 }
