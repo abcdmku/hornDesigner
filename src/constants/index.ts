@@ -16,8 +16,8 @@ export const HORN_TYPES = [
 // Default values for horn parameters
 export const DEFAULT_HORN_PARAMS = {
   throatDiameter: 25.4, // 1 inch in mm
-  mouthWidth: 200,
-  mouthHeight: 150,
+  mouthWidth: 400,
+  mouthHeight: 200,
   length: 300,
   flareType: 'exponential' as const,
   roundMouth: false,
