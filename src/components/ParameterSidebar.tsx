@@ -43,7 +43,7 @@ export default function ParameterSidebar({
       {/* Header */}
       <div className="p-6 border-b border-white/10">
         <div className="flex items-center space-x-3 mb-2">
-          <img src="/logo-icon.svg" alt="Logo" className="w-12 h-12" />
+          <img src="./logo-icon.svg" alt="Logo" className="w-12 h-12" />
           <div>
             <h2 className="text-2xl font-bold text-white">Horn Designer</h2>
             <p className="text-sm text-gray-400">Professional Audio Design Tool</p>

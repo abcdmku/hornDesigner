@@ -40,7 +40,8 @@
       "WebFetch(domain:tympanus.net)",
       "WebFetch(domain:r3f.docs.pmnd.rs)",
       "WebFetch(domain:discourse.threejs.org)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(git rm:*)"
     ],
     "deny": []
   }
