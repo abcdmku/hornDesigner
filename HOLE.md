@@ -1,0 +1,1 @@
+when theres a lot of bolt holes the model takes a while to render. can you mkae it more effiecent

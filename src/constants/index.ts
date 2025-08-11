@@ -48,3 +48,46 @@ export const DEFAULT_DRIVER_PARAMS = {
   boltHoleDiameter: 4,
   boltCircleDiameter: 40
 };
+
+// Performance settings for different quality modes
+export const PERFORMANCE_SETTINGS = {
+  HIGH: { 
+    holeSegments: 16,  // Smooth circles
+    hornSteps: 30, 
+    enableCSG: true,
+    enableLOD: true,
+    enableShadows: true,
+    antialias: true
+  },
+  MEDIUM: { 
+    holeSegments: 8,   // Octagon shape
+    hornSteps: 20, 
+    enableCSG: true,
+    enableLOD: true,
+    enableShadows: true,
+    antialias: true
+  },
+  LOW: { 
+    holeSegments: 4,   // Square/diamond shape
+    hornSteps: 15, 
+    enableCSG: true,   // Keep holes visible but with minimal polygons
+    enableLOD: true,
+    enableShadows: false,
+    antialias: false
+  }
+};
+
+// Performance thresholds for automatic quality adjustment
+export const PERFORMANCE_THRESHOLDS = {
+  targetFPS: 50,
+  minFPS: 30,
+  maxFPS: 60,
+  adjustmentBuffer: 10 // Number of frames to average before adjusting
+};
+
+// LOD distances for different components
+export const LOD_DISTANCES = {
+  plate: [0, 300, 600],
+  driver: [0, 300, 600],
+  bolts: [0, 200, 400]
+};

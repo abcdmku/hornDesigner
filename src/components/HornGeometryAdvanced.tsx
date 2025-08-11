@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import * as THREE from 'three';
-import { CSG } from 'three-csg-ts';
+import { createFastCSGHoles, HoleParams } from './GeometryUtils';
 import { HornProfileParams, MountPlateParams, DriverMountParams } from '../types';
 
 interface HornGeometryAdvancedProps {
@@ -100,7 +100,7 @@ function buildHollowHornSimple(params: HornProfileParams): THREE.BufferGeometry 
   return buildHollowHornOptimized(params); // Same implementation
 }
 
-// Plate with CSG holes (optimized)
+// Plate with CSG holes (optimized using three-bvh-csg)
 function buildPlateWithCSGHoles(plateParams: MountPlateParams, hornLength: number): THREE.BufferGeometry {
   const radius = (plateParams.diameter || 250) / 2;
   const thickness = plateParams.thickness;
@@ -112,39 +112,34 @@ function buildPlateWithCSGHoles(plateParams: MountPlateParams, hornLength: numbe
   
   const plateMesh = new THREE.Mesh(plateGeom, new THREE.MeshStandardMaterial());
   
-  // Create holes more efficiently
-  const holes: THREE.Mesh[] = [];
-  const holeGeom = new THREE.CylinderGeometry(
-    plateParams.boltHoleDiameter / 2,
-    plateParams.boltHoleDiameter / 2,
-    thickness * 1.1,
-    16 // Balanced segments for holes
-  );
-  holeGeom.rotateX(Math.PI / 2);
+  // Create hole positions
+  const holePositions: Array<{ x: number; y: number; z: number }> = [];
   
   for (let i = 0; i < plateParams.boltCount; i++) {
     const angle = (i / plateParams.boltCount) * Math.PI * 2;
     const x = Math.cos(angle) * (plateParams.boltCircleDiameter / 2);
     const y = Math.sin(angle) * (plateParams.boltCircleDiameter / 2);
     
-    const holeClone = holeGeom.clone();
-    holeClone.translate(x, y, hornLength + thickness / 2);
-    holes.push(new THREE.Mesh(holeClone, new THREE.MeshStandardMaterial()));
+    holePositions.push({
+      x,
+      y,
+      z: hornLength + thickness / 2
+    });
   }
   
-  // Apply CSG with error handling
+  // Use fast CSG operations
+  const holeParams: HoleParams = {
+    diameter: plateParams.boltHoleDiameter,
+    thickness: thickness,
+    segments: 16
+  };
+  
   try {
-    plateMesh.updateMatrix();
-    holes.forEach(hole => hole.updateMatrix());
-    
-    let result: any = plateMesh;
-    for (const hole of holes) {
-      result = CSG.subtract(result, hole);
-    }
-    
-    return result.geometry;
+    const optimizedGeometry = createFastCSGHoles(plateMesh, holePositions, holeParams);
+    plateGeom.dispose(); // Clean up original geometry
+    return optimizedGeometry;
   } catch (error) {
-    console.warn('CSG operation failed for plate, using simple geometry', error);
+    console.warn('Fast CSG operation failed for plate, using simple geometry', error);
     return plateGeom;
   }
 }
@@ -161,7 +156,7 @@ function buildPlateSimple(plateParams: MountPlateParams, hornLength: number): TH
   return geometry;
 }
 
-// Driver flange with CSG holes (optimized)
+// Driver flange with CSG holes (optimized using three-bvh-csg)
 function buildDriverWithCSGHoles(driverParams: DriverMountParams): THREE.BufferGeometry {
   const radius = driverParams.throatDiameter / 2;
   const thickness = driverParams.flangeThickness;
@@ -173,39 +168,34 @@ function buildDriverWithCSGHoles(driverParams: DriverMountParams): THREE.BufferG
   
   const flangeMesh = new THREE.Mesh(flangeGeom, new THREE.MeshStandardMaterial());
   
-  // Create holes efficiently
-  const holes: THREE.Mesh[] = [];
-  const holeGeom = new THREE.CylinderGeometry(
-    driverParams.boltHoleDiameter / 2,
-    driverParams.boltHoleDiameter / 2,
-    thickness * 1.1,
-    16 // Balanced segments
-  );
-  holeGeom.rotateX(Math.PI / 2);
+  // Create hole positions
+  const holePositions: Array<{ x: number; y: number; z: number }> = [];
   
   for (let i = 0; i < driverParams.boltCount; i++) {
     const angle = (i / driverParams.boltCount) * Math.PI * 2;
     const x = Math.cos(angle) * (driverParams.boltCircleDiameter / 2);
     const y = Math.sin(angle) * (driverParams.boltCircleDiameter / 2);
     
-    const holeClone = holeGeom.clone();
-    holeClone.translate(x, y, -thickness / 2);
-    holes.push(new THREE.Mesh(holeClone, new THREE.MeshStandardMaterial()));
+    holePositions.push({
+      x,
+      y,
+      z: -thickness / 2
+    });
   }
   
-  // Apply CSG with error handling
+  // Use fast CSG operations
+  const holeParams: HoleParams = {
+    diameter: driverParams.boltHoleDiameter,
+    thickness: thickness,
+    segments: 16
+  };
+  
   try {
-    flangeMesh.updateMatrix();
-    holes.forEach(hole => hole.updateMatrix());
-    
-    let result: any = flangeMesh;
-    for (const hole of holes) {
-      result = CSG.subtract(result, hole);
-    }
-    
-    return result.geometry;
+    const optimizedGeometry = createFastCSGHoles(flangeMesh, holePositions, holeParams);
+    flangeGeom.dispose(); // Clean up original geometry
+    return optimizedGeometry;
   } catch (error) {
-    console.warn('CSG operation failed for driver flange, using simple geometry', error);
+    console.warn('Fast CSG operation failed for driver flange, using simple geometry', error);
     return flangeGeom;
   }
 }

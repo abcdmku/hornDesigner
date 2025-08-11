@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { CSG } from 'three-csg-ts';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { Brush, Evaluator, SUBTRACTION } from 'three-bvh-csg';
 
 // Wall thickness calculation - CORRECT APPROACH: expand outward only
 export function calculateRadii(interiorRadius: number, wallThickness: number) {
@@ -389,4 +391,171 @@ export function generateSectionFaces(
   }
   
   return indices;
+}
+
+// ================= Performance Optimization Functions =================
+
+// Define interface for hole parameters
+export interface HoleParams {
+  diameter: number;
+  thickness: number;
+  segments?: number;
+}
+
+// Create merged bolt holes using BufferGeometryUtils for better performance
+export function createMergedBoltHoles(
+  positions: Array<{ x: number; y: number; z: number }>,
+  holeParams: HoleParams
+): THREE.BufferGeometry {
+  // Create single cylinder geometry
+  const baseHoleGeom = new THREE.CylinderGeometry(
+    holeParams.diameter / 2,
+    holeParams.diameter / 2,
+    holeParams.thickness * 1.1,
+    holeParams.segments || 8 // Reduced segments for performance
+  );
+  
+  // Rotate for proper orientation
+  baseHoleGeom.rotateX(Math.PI / 2);
+  
+  // Create array of positioned geometries
+  const holeGeometries: THREE.BufferGeometry[] = [];
+  
+  for (const pos of positions) {
+    const geom = baseHoleGeom.clone();
+    geom.translate(pos.x, pos.y, pos.z);
+    holeGeometries.push(geom);
+  }
+  
+  // Merge all holes into single geometry
+  const mergedGeometry = BufferGeometryUtils.mergeGeometries(holeGeometries);
+  
+  // Clean up temporary geometries
+  holeGeometries.forEach(geom => geom.dispose());
+  baseHoleGeom.dispose();
+  
+  return mergedGeometry;
+}
+
+// Create instanced bolt holes for maximum performance
+export function createInstancedBoltHoles(
+  positions: Array<{ x: number; y: number; z: number }>,
+  holeParams: HoleParams
+): THREE.InstancedMesh {
+  // Create base geometry
+  const baseHoleGeom = new THREE.CylinderGeometry(
+    holeParams.diameter / 2,
+    holeParams.diameter / 2,
+    holeParams.thickness * 1.1,
+    holeParams.segments || 8
+  );
+  baseHoleGeom.rotateX(Math.PI / 2);
+  
+  // Create material
+  const material = new THREE.MeshStandardMaterial({ color: 0x888888 });
+  
+  // Create instanced mesh
+  const instancedMesh = new THREE.InstancedMesh(
+    baseHoleGeom,
+    material,
+    positions.length
+  );
+  
+  // Set transforms for each instance
+  const matrix = new THREE.Matrix4();
+  positions.forEach((pos, index) => {
+    matrix.makeTranslation(pos.x, pos.y, pos.z);
+    instancedMesh.setMatrixAt(index, matrix);
+  });
+  
+  // Update instance matrix
+  instancedMesh.instanceMatrix.needsUpdate = true;
+  
+  return instancedMesh;
+}
+
+// Fast CSG operations using three-bvh-csg library
+export function createFastCSGHoles(
+  baseMesh: THREE.Mesh,
+  holePositions: Array<{ x: number; y: number; z: number }>,
+  holeParams: HoleParams
+): THREE.BufferGeometry {
+  try {
+    // Create evaluator for CSG operations
+    const evaluator = new Evaluator();
+    evaluator.attributes = ['position', 'normal'];
+    evaluator.useGroups = false;
+    
+    // Ensure base mesh has proper geometry
+    if (!baseMesh.geometry) {
+      throw new Error('Base mesh has no geometry');
+    }
+    
+    // Create base brush from the mesh
+    const baseBrush = new Brush(baseMesh.geometry.clone());
+    baseBrush.updateMatrixWorld();
+    
+    // Create merged hole geometry
+    const mergedHoleGeometry = createMergedBoltHoles(holePositions, holeParams);
+    
+    // Create hole brush
+    const holeBrush = new Brush(mergedHoleGeometry);
+    holeBrush.updateMatrixWorld();
+    
+    // Perform single CSG subtraction operation
+    const result = evaluator.evaluate(baseBrush, holeBrush, SUBTRACTION);
+    
+    // Clean up
+    mergedHoleGeometry.dispose();
+    baseBrush.geometry.dispose();
+    holeBrush.geometry.dispose();
+    
+    return result.geometry;
+  } catch (error) {
+    console.warn('Fast CSG operation failed, returning original geometry:', error);
+    return baseMesh.geometry.clone();
+  }
+}
+
+// Create LOD-aware bolt holes with different detail levels
+export function createLODBoltHoles(
+  positions: Array<{ x: number; y: number; z: number }>,
+  holeParams: HoleParams,
+  detailLevel: 'high' | 'medium' | 'low'
+): THREE.BufferGeometry {
+  // Adjust segments based on detail level - lower polygon count for distant views
+  const segmentMap = {
+    high: 16,   // Smooth circles for close-up
+    medium: 8,  // Octagon shape for medium distance
+    low: 4      // Square/diamond shape for far distance
+  };
+  
+  const adjustedParams: HoleParams = {
+    ...holeParams,
+    segments: segmentMap[detailLevel]
+  };
+  
+  // Always keep all holes, just reduce their complexity
+  return createMergedBoltHoles(positions, adjustedParams);
+}
+
+// Geometry cache for reuse
+const geometryCache = new Map<string, THREE.BufferGeometry>();
+
+// Get or create cached geometry
+export function getCachedGeometry(
+  key: string,
+  createFn: () => THREE.BufferGeometry
+): THREE.BufferGeometry {
+  if (!geometryCache.has(key)) {
+    const geometry = createFn();
+    geometryCache.set(key, geometry);
+  }
+  return geometryCache.get(key)!.clone();
+}
+
+// Clear geometry cache
+export function clearGeometryCache(): void {
+  geometryCache.forEach(geometry => geometry.dispose());
+  geometryCache.clear();
 }

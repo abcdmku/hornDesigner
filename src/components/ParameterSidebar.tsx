@@ -15,6 +15,10 @@ interface ParameterSidebarProps {
   onToggleMountingPlate: (show: boolean) => void;
   onToggleDriverMount: (show: boolean) => void;
   estimatedCost: number;
+  performanceMode?: 'high' | 'medium' | 'low';
+  onPerformanceModeChange?: (mode: 'high' | 'medium' | 'low') => void;
+  showPerformanceMonitor?: boolean;
+  onTogglePerformanceMonitor?: (show: boolean) => void;
 }
 
 export default function ParameterSidebar({
@@ -30,7 +34,11 @@ export default function ParameterSidebar({
   onMaterialChange,
   onToggleMountingPlate,
   onToggleDriverMount,
-  estimatedCost
+  estimatedCost,
+  performanceMode = 'high',
+  onPerformanceModeChange,
+  showPerformanceMonitor = false,
+  onTogglePerformanceMonitor
 }: ParameterSidebarProps) {
   return (
     <div className="w-80 glass-dark rounded-r-3xl m-4 ml-0 flex flex-col h-[calc(100vh-2rem)] shadow-2xl">
@@ -567,6 +575,86 @@ export default function ParameterSidebar({
               </div>
             </div>
           </div>
+          </div>
+        </div>
+
+        {/* Performance Settings */}
+        <div className="glass-section p-5">
+          <div className="flex items-center space-x-2 mb-4">
+            <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
+            <h3 className="text-base font-semibold text-white">Performance Settings</h3>
+          </div>
+          <div className="space-y-4">
+            
+            {/* Performance Mode */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Render Quality
+              </label>
+              <div className="flex space-x-1">
+                {(['low', 'medium', 'high'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => onPerformanceModeChange?.(mode)}
+                    className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all capitalize ${
+                      performanceMode === mode
+                        ? 'glass-button text-white'
+                        : 'text-gray-400 hover:text-gray-300 hover:bg-white/5'
+                    }`}
+                  >
+                    {mode}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                {performanceMode === 'high' && 'Best quality with all features enabled'}
+                {performanceMode === 'medium' && 'Balanced performance and quality'}
+                {performanceMode === 'low' && 'Optimized for smooth performance'}
+              </p>
+            </div>
+            
+            {/* Performance Monitor Toggle */}
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="block text-sm font-medium text-gray-300">
+                  Performance Monitor
+                </label>
+                <p className="text-xs text-gray-500 mt-1">Show FPS and metrics</p>
+              </div>
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showPerformanceMonitor}
+                  onChange={(e) => onTogglePerformanceMonitor?.(e.target.checked)}
+                  className="sr-only"
+                />
+                <div className={`relative w-11 h-6 rounded-full transition-all duration-200 ease-in-out ${
+                  showPerformanceMonitor ? 'bg-blue-600 shadow-lg' : 'bg-gray-600'
+                }`}>
+                  <span
+                    className={`absolute block w-5 h-5 bg-white rounded-full shadow transform transition-all duration-200 ease-in-out ${
+                      showPerformanceMonitor ? 'translate-x-5' : 'translate-x-0.5'
+                    } top-0.5`}
+                  />
+                </div>
+              </label>
+            </div>
+            
+            {/* Performance Info */}
+            <div className="glass-input p-3 rounded-lg">
+              <div className="flex items-center space-x-2 mb-2">
+                <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-xs font-medium text-blue-300">Performance Tips</span>
+              </div>
+              <ul className="text-xs text-gray-400 space-y-1">
+                <li>• Lower quality for models with 50+ bolt holes</li>
+                <li>• Medium quality balances speed and detail</li>
+                <li>• High quality for final presentations</li>
+              </ul>
+            </div>
           </div>
         </div>
 

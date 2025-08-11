@@ -1,7 +1,8 @@
 import { useState, useCallback, useMemo } from 'react';
 import ParameterSidebar from './components/ParameterSidebar';
 import Scene3D from './components/Scene3D';
-import SimpleHornGeometry from './components/SimpleHornGeometry';
+import OptimizedHornGeometry from './components/OptimizedHornGeometry';
+import PerformanceMonitor, { usePerformanceAdapter } from './components/PerformanceMonitor';
 import { AppState } from './types';
 import { MATERIALS, DEFAULT_HORN_PARAMS, DEFAULT_PLATE_PARAMS, DEFAULT_DRIVER_PARAMS } from './constants';
 // import { calculateCost } from './utils/costCalculator'; // Temporarily disabled
@@ -15,6 +16,15 @@ function App() {
     selectedMaterial: MATERIALS[0], // Default to PLA
     showMountingPlate: true,
     showDriverMount: true
+  });
+  
+  // Performance state
+  const [performanceMode, setPerformanceMode] = useState<'high' | 'medium' | 'low'>('high');
+  const [showPerformanceMonitor, setShowPerformanceMonitor] = useState(false);
+  
+  // Use performance adapter for automatic quality adjustment
+  const { handlePerformanceChange } = usePerformanceAdapter(50, (quality) => {
+    setPerformanceMode(quality);
   });
 
   // Calculate cost in real-time (simplified for now)
@@ -80,6 +90,10 @@ function App() {
         onToggleMountingPlate={handleToggleMountingPlate}
         onToggleDriverMount={handleToggleDriverMount}
         estimatedCost={estimatedCost}
+        performanceMode={performanceMode}
+        onPerformanceModeChange={setPerformanceMode}
+        showPerformanceMonitor={showPerformanceMonitor}
+        onTogglePerformanceMonitor={setShowPerformanceMonitor}
       />
 
       {/* Main Content Area */}
@@ -116,13 +130,24 @@ function App() {
         <div className="flex-1 relative m-4">
           <div className="glass-dark rounded-2xl h-full shadow-2xl overflow-hidden">
             <Scene3D>
-              <SimpleHornGeometry
+              <OptimizedHornGeometry
                 hornParams={appState.hornParams}
                 plateParams={appState.plateParams}
                 driverParams={appState.driverParams}
                 showMountingPlate={appState.showMountingPlate}
                 showDriverMount={appState.showDriverMount}
+                performanceMode={performanceMode}
+                enableLOD={true}
               />
+              {showPerformanceMonitor && (
+                <PerformanceMonitor
+                  visible={showPerformanceMonitor}
+                  position="top-left"
+                  onPerformanceChange={handlePerformanceChange}
+                  showGraphs={true}
+                  minimal={false}
+                />
+              )}
             </Scene3D>
           </div>
         </div>
