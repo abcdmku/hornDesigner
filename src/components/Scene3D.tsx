@@ -77,8 +77,8 @@ export default function Scene3D({ children }: Scene3DProps) {
           enableZoom={true}
           enableRotate={true}
           dampingFactor={0.1}
-          minDistance={200}
-          maxDistance={2000}
+          minDistance={10}
+          maxDistance={5000}
           maxPolarAngle={Math.PI / 2}
         />
 
