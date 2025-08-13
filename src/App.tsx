@@ -172,26 +172,6 @@ function App() {
         onToggle={() => setShowAcousticPanel(!showAcousticPanel)}
       />
 
-      {/* Parameter Sidebar - Right Side */}
-      <ParameterSidebar
-        hornParams={appState.hornParams}
-        plateParams={appState.plateParams}
-        driverParams={appState.driverParams}
-        selectedMaterial={appState.selectedMaterial}
-        showMountingPlate={appState.showMountingPlate}
-        showDriverMount={appState.showDriverMount}
-        onHornParamsChange={handleHornParamsChange}
-        onPlateParamsChange={handlePlateParamsChange}
-        onDriverParamsChange={handleDriverParamsChange}
-        onMaterialChange={handleMaterialChange}
-        onToggleMountingPlate={handleToggleMountingPlate}
-        onToggleDriverMount={handleToggleDriverMount}
-        performanceMode={performanceMode}
-        onPerformanceModeChange={setPerformanceMode}
-        showPerformanceMonitor={showPerformanceMonitor}
-        onTogglePerformanceMonitor={setShowPerformanceMonitor}
-      />
-
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Top Bar with Status and Export Button */}
@@ -304,6 +284,26 @@ function App() {
         </div>
 
       </div>
+
+      {/* Parameter Sidebar - Right Side */}
+      <ParameterSidebar
+        hornParams={appState.hornParams}
+        plateParams={appState.plateParams}
+        driverParams={appState.driverParams}
+        selectedMaterial={appState.selectedMaterial}
+        showMountingPlate={appState.showMountingPlate}
+        showDriverMount={appState.showDriverMount}
+        onHornParamsChange={handleHornParamsChange}
+        onPlateParamsChange={handlePlateParamsChange}
+        onDriverParamsChange={handleDriverParamsChange}
+        onMaterialChange={handleMaterialChange}
+        onToggleMountingPlate={handleToggleMountingPlate}
+        onToggleDriverMount={handleToggleDriverMount}
+        performanceMode={performanceMode}
+        onPerformanceModeChange={setPerformanceMode}
+        showPerformanceMonitor={showPerformanceMonitor}
+        onTogglePerformanceMonitor={setShowPerformanceMonitor}
+      />
     </div>
   );
 }
