@@ -36,6 +36,8 @@ export const AcousticSidePanel: React.FC<AcousticSidePanelProps> = ({
     return FrequencyResponseAnalyzer.calculateResponse(profilePoints, hornParams);
   }, [hornParams]);
 
+  if (!isOpen) return null;
+
   return (
     <div className="w-[28rem] glass-dark rounded-l-3xl m-4 mr-0 flex flex-col h-[calc(100vh-2rem)] shadow-2xl">
         {/* Header */}
