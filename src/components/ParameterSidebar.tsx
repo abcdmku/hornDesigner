@@ -40,7 +40,7 @@ export default function ParameterSidebar({
   onTogglePerformanceMonitor
 }: ParameterSidebarProps) {
   return (
-    <div className="w-96 glass-dark rounded-r-3xl m-4 ml-0 flex flex-col h-[calc(100vh-2rem)] shadow-2xl">
+    <div className="w-[28rem] glass-dark rounded-r-3xl m-4 ml-0 flex flex-col h-[calc(100vh-2rem)] shadow-2xl">
       {/* Header */}
       <div className="p-6 border-b border-white/10">
         <div className="flex items-center space-x-3 mb-2">
