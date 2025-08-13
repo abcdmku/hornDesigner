@@ -1,0 +1,18 @@
+export const GEOMETRY_CONSTANTS = {
+  DEFAULT_SEGMENTS: 32,
+  BOLT_HOLE_SEGMENTS_REDUCED: 8,
+  CROSS_SECTION_SEGMENTS: 16,
+  RECTANGULAR_CURVE_SEGMENTS: 4,
+  HOLE_PENETRATION_FACTOR: 2.0,
+  HOLE_OVERFLOW_FACTOR: 1.1,
+  DEFAULT_BOLT_MARGIN: 10,
+  DEFAULT_MAX_BOLT_SPACING: 150,
+} as const;
+
+export const LOD_SEGMENTS = {
+  HIGH: 16,
+  MEDIUM: 8,
+  LOW: 4,
+} as const;
+
+export type DetailLevel = "high" | "medium" | "low";
