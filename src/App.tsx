@@ -4,7 +4,7 @@ import Scene3D from './components/Scene3D';
 import OptimizedHornGeometry from './components/OptimizedHornGeometry';
 import Profile2DView from './components/Profile2DView';
 import PerformanceMonitor, { usePerformanceAdapter } from './components/PerformanceMonitor';
-import { AcousticSidePanel } from './components/AcousticSidePanel';
+import {AcousticSidePanel} from './components/AcousticSidePanel';
 import { AppState } from './types';
 import { MATERIALS, DEFAULT_HORN_PARAMS, DEFAULT_PLATE_PARAMS, DEFAULT_DRIVER_PARAMS } from './constants';
 import { DispersionAnalyzer } from './acoustic/analysis/Dispersion';
@@ -24,7 +24,6 @@ function App() {
   
   // View mode state
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('3d');
-  const [showAcousticPanel, setShowAcousticPanel] = useState(true);
   
   // Performance state
   const [performanceMode, setPerformanceMode] = useState<'high' | 'medium' | 'low'>('high');
@@ -271,24 +270,12 @@ function App() {
                     </svg>
                     <span>View 2D Profile</span>
                   </button>
-                  
-                  <button
-                    onClick={() => setShowAcousticPanel(!showAcousticPanel)}
-                    className="glass-button px-4 py-2 rounded-lg text-white font-medium hover:scale-105 transition-all flex items-center space-x-2"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                    <span>Acoustic</span>
-                  </button>
                 </div>
               </>
             ) : (
               <Profile2DView 
                 hornParams={appState.hornParams}
                 onToggle3D={() => setViewMode('3d')}
-                onToggleAcousticPanel={() => setShowAcousticPanel(!showAcousticPanel)}
               />
             )}
           </div>
@@ -296,11 +283,8 @@ function App() {
 
       </div>
 
-      <AcousticSidePanel
-        hornParams={appState.hornParams}
-        isOpen={showAcousticPanel}
-        onToggle={() => setShowAcousticPanel(!showAcousticPanel)}
-      />
+      <AcousticSidePanel hornParams={appState.hornParams}/>
+
     </div>
   );
 }

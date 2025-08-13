@@ -24,30 +24,38 @@ export const ContourPlot: React.FC<ContourPlotProps> = ({
   showColorbar = true
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  // For HiDPI: render at 2x resolution
+  const renderScale = 2;
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // Set canvas internal resolution for HiDPI
+    canvas.width = width * renderScale;
+    canvas.height = height * renderScale;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // All coordinates below are scaled for HiDPI
+    const margin = { top: 30 * renderScale, right: (showColorbar ? 80 : 20) * renderScale, bottom: 50 * renderScale, left: 60 * renderScale };
+    const plotWidth = (width * renderScale) - margin.left - margin.right;
+    const plotHeight = (height * renderScale) - margin.top - margin.bottom;
+
     // Clear canvas
     ctx.fillStyle = '#0a0a0a';
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(0, 0, width * renderScale, height * renderScale);
 
-    // Calculate plot area (with margins for labels)
-    const margin = { top: 30, right: showColorbar ? 80 : 20, bottom: 50, left: 60 };
-    const plotWidth = width - margin.left - margin.right;
-    const plotHeight = height - margin.top - margin.bottom;
+    // Generate frequency and angle ranges (higher resolution)
+    const frequencies = generateLogFrequencies(20, 20000, 200);
+    const angles = generateLinearAngles(-90, 90, 200);
 
-    // Generate frequency and angle ranges
-    const frequencies = generateLogFrequencies(20, 20000, 50);
-    const angles = generateLinearAngles(-90, 90, 50);
-    
     // Get mouth dimension for this axis
-    const mouthDimension = axis === 'horizontal' 
-      ? hornParams.mouthWidth 
+    const mouthDimension = axis === 'horizontal'
+      ? hornParams.mouthWidth
       : (hornParams.mouthHeight || hornParams.mouthWidth);
 
     // Calculate dispersion data for contour
@@ -60,13 +68,12 @@ export const ContourPlot: React.FC<ContourPlotProps> = ({
     drawAxes(ctx, frequencies, angles, margin, plotWidth, plotHeight);
 
     // Draw labels
-    drawLabels(ctx, margin, plotWidth, plotHeight, title, axis);
+    drawLabels(ctx, margin, plotWidth, plotHeight, title, axis, height * renderScale);
 
     // Draw colorbar
     if (showColorbar) {
       drawColorbar(ctx, margin, plotWidth, plotHeight);
     }
-
   }, [hornParams, axis, width, height, title, showColorbar]);
 
   const generateLogFrequencies = (min: number, max: number, points: number): number[] => {
@@ -74,22 +81,18 @@ export const ContourPlot: React.FC<ContourPlotProps> = ({
     const logMin = Math.log10(min);
     const logMax = Math.log10(max);
     const step = (logMax - logMin) / (points - 1);
-    
     for (let i = 0; i < points; i++) {
       frequencies.push(Math.pow(10, logMin + i * step));
     }
-    
     return frequencies;
   };
 
   const generateLinearAngles = (min: number, max: number, points: number): number[] => {
     const angles: number[] = [];
     const step = (max - min) / (points - 1);
-    
     for (let i = 0; i < points; i++) {
       angles.push(min + i * step);
     }
-    
     return angles;
   };
 
@@ -148,27 +151,22 @@ export const ContourPlot: React.FC<ContourPlotProps> = ({
     plotHeight: number
   ) => {
     const imageData = ctx.createImageData(plotWidth, plotHeight);
-    
     for (let x = 0; x < plotWidth; x++) {
       for (let y = 0; y < plotHeight; y++) {
         // Map pixel coordinates to data indices
         const freqIndex = Math.floor((x / plotWidth) * (data.length - 1));
         const angleIndex = Math.floor(((plotHeight - y - 1) / plotHeight) * (data[0]?.length - 1 || 0));
-        
         if (freqIndex < data.length && angleIndex < data[freqIndex].length) {
           const dBValue = data[freqIndex][angleIndex];
           const color = dBToColor(dBValue);
-          
           const pixelIndex = (y * plotWidth + x) * 4;
-          imageData.data[pixelIndex] = color.r;     // Red
-          imageData.data[pixelIndex + 1] = color.g; // Green
-          imageData.data[pixelIndex + 2] = color.b; // Blue
-          imageData.data[pixelIndex + 3] = 255;     // Alpha
+          imageData.data[pixelIndex] = color.r;
+          imageData.data[pixelIndex + 1] = color.g;
+          imageData.data[pixelIndex + 2] = color.b;
+          imageData.data[pixelIndex + 3] = 255;
         }
       }
     }
-    
-    // Draw the image data to canvas
     ctx.putImageData(imageData, margin.left, margin.top);
   };
 
@@ -271,28 +269,29 @@ export const ContourPlot: React.FC<ContourPlotProps> = ({
 
   const drawLabels = (
     ctx: CanvasRenderingContext2D,
-    margin: any,
-    plotWidth: number,
-    plotHeight: number,
-    title: string,
-    axis: string
+  margin: any,
+  plotWidth: number,
+  plotHeight: number,
+  title: string,
+  axis: string,
+  scaledHeight: number
   ) => {
     ctx.fillStyle = '#ffffff';
-    ctx.font = '12px monospace';
+    ctx.font = `${12 * renderScale}px monospace`;
 
     // Title
     if (title) {
       ctx.textAlign = 'center';
-      ctx.fillText(title, margin.left + plotWidth / 2, 20);
+      ctx.fillText(title, margin.left + plotWidth / 2, 20 * renderScale);
     }
 
     // Axis labels
     ctx.textAlign = 'center';
-    ctx.fillText('Frequency (Hz)', margin.left + plotWidth / 2, height - 10);
+    ctx.fillText('Frequency (Hz)', margin.left + plotWidth / 2, scaledHeight - 10 * renderScale);
 
     // Y-axis label (rotated)
     ctx.save();
-    ctx.translate(15, margin.top + plotHeight / 2);
+    ctx.translate(15 * renderScale, margin.top + plotHeight / 2);
     ctx.rotate(-Math.PI / 2);
     ctx.fillText(`${axis === 'horizontal' ? 'Horizontal' : 'Vertical'} Angle (°)`, 0, 0);
     ctx.restore();
@@ -341,9 +340,10 @@ export const ContourPlot: React.FC<ContourPlotProps> = ({
     <div className="relative">
       <canvas
         ref={canvasRef}
-        width={width}
-        height={height}
+        width={width * renderScale}
+        height={height * renderScale}
         className="border border-gray-700 rounded bg-gray-900"
+        style={{ width: `${width}px`, height: `${height}px` }}
       />
     </div>
   );
@@ -371,7 +371,7 @@ export const DispersionContourPlots: React.FC<DispersionContourPlotsProps> = ({
         width={width}
         height={height}
         title="Horizontal Dispersion"
-        showColorbar={true}
+        showColorbar={false}
       />
       <ContourPlot
         hornParams={hornParams}
@@ -379,7 +379,7 @@ export const DispersionContourPlots: React.FC<DispersionContourPlotsProps> = ({
         width={width}
         height={height}
         title="Vertical Dispersion"
-        showColorbar={false} // Only show colorbar on one plot
+        showColorbar={false}
       />
     </div>
   );
