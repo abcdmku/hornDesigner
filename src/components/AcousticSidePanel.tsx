@@ -37,7 +37,7 @@ export const AcousticSidePanel: React.FC<AcousticSidePanelProps> = ({
   }, [hornParams]);
 
   return (
-    <div className="w-80 glass-dark rounded-l-3xl m-4 mr-0 flex flex-col h-[calc(100vh-2rem)] shadow-2xl">
+    <div className="w-96 glass-dark rounded-l-3xl m-4 mr-0 flex flex-col h-[calc(100vh-2rem)] shadow-2xl">
         {/* Header */}
         <div className="p-6 border-b border-white/10">
           <div className="flex items-center space-x-3 mb-2">

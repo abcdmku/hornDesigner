@@ -165,13 +165,24 @@ function App() {
 
   return (
     <div className="flex h-screen gradient-bg overflow-hidden">
-      {/* Acoustic Side Panel - Left Side */}
-      <AcousticSidePanel
+      <ParameterSidebar
         hornParams={appState.hornParams}
-        isOpen={showAcousticPanel}
-        onToggle={() => setShowAcousticPanel(!showAcousticPanel)}
+        plateParams={appState.plateParams}
+        driverParams={appState.driverParams}
+        selectedMaterial={appState.selectedMaterial}
+        showMountingPlate={appState.showMountingPlate}
+        showDriverMount={appState.showDriverMount}
+        onHornParamsChange={handleHornParamsChange}
+        onPlateParamsChange={handlePlateParamsChange}
+        onDriverParamsChange={handleDriverParamsChange}
+        onMaterialChange={handleMaterialChange}
+        onToggleMountingPlate={handleToggleMountingPlate}
+        onToggleDriverMount={handleToggleDriverMount}
+        performanceMode={performanceMode}
+        onPerformanceModeChange={setPerformanceMode}
+        showPerformanceMonitor={showPerformanceMonitor}
+        onTogglePerformanceMonitor={setShowPerformanceMonitor}
       />
-
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Top Bar with Status and Export Button */}
@@ -285,24 +296,10 @@ function App() {
 
       </div>
 
-      {/* Parameter Sidebar - Right Side */}
-      <ParameterSidebar
+      <AcousticSidePanel
         hornParams={appState.hornParams}
-        plateParams={appState.plateParams}
-        driverParams={appState.driverParams}
-        selectedMaterial={appState.selectedMaterial}
-        showMountingPlate={appState.showMountingPlate}
-        showDriverMount={appState.showDriverMount}
-        onHornParamsChange={handleHornParamsChange}
-        onPlateParamsChange={handlePlateParamsChange}
-        onDriverParamsChange={handleDriverParamsChange}
-        onMaterialChange={handleMaterialChange}
-        onToggleMountingPlate={handleToggleMountingPlate}
-        onToggleDriverMount={handleToggleDriverMount}
-        performanceMode={performanceMode}
-        onPerformanceModeChange={setPerformanceMode}
-        showPerformanceMonitor={showPerformanceMonitor}
-        onTogglePerformanceMonitor={setShowPerformanceMonitor}
+        isOpen={showAcousticPanel}
+        onToggle={() => setShowAcousticPanel(!showAcousticPanel)}
       />
     </div>
   );
