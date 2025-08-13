@@ -1,10 +1,13 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import ParameterSidebar from './components/ParameterSidebar';
 import Scene3D from './components/Scene3D';
 import OptimizedHornGeometry from './components/OptimizedHornGeometry';
+import Profile2DView from './components/Profile2DView';
 import PerformanceMonitor, { usePerformanceAdapter } from './components/PerformanceMonitor';
 import { AppState } from './types';
 import { MATERIALS, DEFAULT_HORN_PARAMS, DEFAULT_PLATE_PARAMS, DEFAULT_DRIVER_PARAMS } from './constants';
+import { DispersionAnalyzer } from './acoustic/analysis/Dispersion';
+import { FrequencyResponseAnalyzer } from './acoustic/analysis/FrequencyResponse';
 // import { calculateCost } from './utils/costCalculator'; // Temporarily disabled
 
 function App() {
@@ -17,6 +20,9 @@ function App() {
     showMountingPlate: true,
     showDriverMount: true
   });
+  
+  // View mode state
+  const [viewMode, setViewMode] = useState<'2d' | '3d'>('3d');
   
   // Performance state
   const [performanceMode, setPerformanceMode] = useState<'high' | 'medium' | 'low'>('high');
@@ -35,6 +41,83 @@ function App() {
     const materialCost = mass * appState.selectedMaterial.costPerGram;
     return materialCost + 15; // Add $15 labor cost
   }, [appState.hornParams, appState.selectedMaterial]);
+
+  // Calculate acoustic properties when parameters change
+  useEffect(() => {
+    const params = appState.hornParams;
+    const mode = params.acousticCalculationMode || 'size-to-dispersion';
+    
+    if (mode === 'size-to-dispersion') {
+      // Calculate dispersion from current horn size
+      const targetFreq = params.targetFrequency || 1000;
+      const mouthHeight = params.mouthHeight || params.mouthWidth;
+      
+      // Calculate beamwidth
+      const horizontalBeamwidth = DispersionAnalyzer.calculateBeamwidth(
+        params.mouthWidth,
+        targetFreq
+      );
+      const verticalBeamwidth = DispersionAnalyzer.calculateBeamwidth(
+        mouthHeight,
+        targetFreq
+      );
+      
+      // Calculate cutoff frequency
+      const throatRadius = params.throatDiameter / 2000; // mm to m
+      const cutoffFreq = FrequencyResponseAnalyzer.calculateCutoffFrequency(throatRadius);
+      
+      // Update calculated values
+      setAppState(prev => ({
+        ...prev,
+        hornParams: {
+          ...prev.hornParams,
+          calculatedHorizontalDispersion: horizontalBeamwidth,
+          calculatedVerticalDispersion: verticalBeamwidth,
+          calculatedCutoffFrequency: cutoffFreq
+        }
+      }));
+    } else if (mode === 'dispersion-to-size') {
+      // Calculate required horn size from target dispersion
+      const targetFreq = params.targetFrequency || 1000;
+      const targetHDispersion = params.targetHorizontalDispersion || 60;
+      const targetVDispersion = params.targetVerticalDispersion || 40;
+      
+      // Calculate required mouth dimensions
+      const result = DispersionAnalyzer.calculateRequiredMouthSize({
+        horizontalAngle: targetHDispersion,
+        verticalAngle: targetVDispersion,
+        frequency: targetFreq,
+        mouthWidth: params.mouthWidth,
+        mouthHeight: params.mouthHeight || params.mouthWidth
+      });
+      
+      // Calculate optimal length based on cutoff frequency
+      const cutoffFreq = params.cutoffFrequency || 500;
+      const wavelength = 343000 / cutoffFreq; // Speed of sound in mm/s
+      const optimalLength = wavelength / 4; // Quarter wavelength
+      
+      // Update calculated values
+      setAppState(prev => ({
+        ...prev,
+        hornParams: {
+          ...prev.hornParams,
+          calculatedMouthWidth: result.requiredWidth,
+          calculatedMouthHeight: result.requiredHeight,
+          calculatedLength: optimalLength
+        }
+      }));
+    }
+  }, [
+    appState.hornParams.mouthWidth,
+    appState.hornParams.mouthHeight,
+    appState.hornParams.length,
+    appState.hornParams.throatDiameter,
+    appState.hornParams.targetFrequency,
+    appState.hornParams.targetHorizontalDispersion,
+    appState.hornParams.targetVerticalDispersion,
+    appState.hornParams.cutoffFrequency,
+    appState.hornParams.acousticCalculationMode
+  ]);
 
   // Event handlers for parameter updates
   const handleHornParamsChange = useCallback((hornParams: typeof appState.hornParams) => {
@@ -151,29 +234,51 @@ function App() {
           </div>
         </div>
 
-        {/* 3D Scene */}
+        {/* 3D Scene or 2D Profile View */}
         <div className="flex-1 relative m-4">
-          <div className="glass-dark rounded-2xl h-full shadow-2xl overflow-hidden">
-            <Scene3D>
-              <OptimizedHornGeometry
+          <div className="glass-dark rounded-2xl h-full shadow-2xl overflow-hidden relative">
+            {viewMode === '3d' ? (
+              <>
+                <Scene3D>
+                  <OptimizedHornGeometry
+                    hornParams={appState.hornParams}
+                    plateParams={appState.plateParams}
+                    driverParams={appState.driverParams}
+                    showMountingPlate={appState.showMountingPlate}
+                    showDriverMount={appState.showDriverMount}
+                    performanceMode={performanceMode}
+                    enableLOD={true}
+                  />
+                  {showPerformanceMonitor && (
+                    <PerformanceMonitor
+                      visible={showPerformanceMonitor}
+                      position="top-left"
+                      onPerformanceChange={handlePerformanceChange}
+                      showGraphs={true}
+                      minimal={false}
+                    />
+                  )}
+                </Scene3D>
+                {/* 2D Profile Button - bottom left in 3D view */}
+                <div className="absolute bottom-4 left-4 z-10">
+                  <button
+                    onClick={() => setViewMode('2d')}
+                    className="glass-button px-6 py-3 rounded-xl text-white font-medium hover:scale-105 transition-transform flex items-center space-x-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span>View 2D Profile</span>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <Profile2DView 
                 hornParams={appState.hornParams}
-                plateParams={appState.plateParams}
-                driverParams={appState.driverParams}
-                showMountingPlate={appState.showMountingPlate}
-                showDriverMount={appState.showDriverMount}
-                performanceMode={performanceMode}
-                enableLOD={true}
+                onToggle3D={() => setViewMode('3d')}
               />
-              {showPerformanceMonitor && (
-                <PerformanceMonitor
-                  visible={showPerformanceMonitor}
-                  position="top-left"
-                  onPerformanceChange={handlePerformanceChange}
-                  showGraphs={true}
-                  minimal={false}
-                />
-              )}
-            </Scene3D>
+            )}
           </div>
         </div>
 

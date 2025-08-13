@@ -1,4 +1,5 @@
 import { MaterialType } from '../types';
+import { ProfileType } from '../profiles/types';
 
 // Material Costs Reference Data from PRP
 export const MATERIALS: MaterialType[] = [
@@ -19,7 +20,8 @@ export const DEFAULT_HORN_PARAMS = {
   mouthWidth: 400,
   mouthHeight: 200,
   length: 300,
-  flareType: 'exponential' as const,
+  flareType: ProfileType.EXPONENTIAL, // Use enum instead of string
+  cutoffFrequency: 500, // Add default cutoff frequency
   roundMouth: false,
   segments: 32,
   wallThickness: 2 // mm - default wall thickness for hollow horns

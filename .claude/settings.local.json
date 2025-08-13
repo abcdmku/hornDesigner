@@ -42,7 +42,9 @@
       "WebFetch(domain:discourse.threejs.org)",
       "Bash(git restore:*)",
       "Bash(git rm:*)",
-      "Bash(npm test)"
+      "Bash(npm test)",
+      "WebSearch",
+      "Bash(npx tsx:*)"
     ],
     "deny": []
   },

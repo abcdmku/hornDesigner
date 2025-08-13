@@ -1,0 +1,1 @@
+Add the horn profiles to the horn type in the ui and add any needed inputs to the Horn Parameters section. The goal is for every profile to work as expected for generating the 3d file and attaching the flanges.

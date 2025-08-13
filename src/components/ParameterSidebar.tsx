@@ -1,5 +1,6 @@
 import { HornProfileParams, MountPlateParams, DriverMountParams, MaterialType } from '../types';
 import { MATERIALS } from '../constants';
+import { ProfileType, getProfileDisplayName } from '../profiles';
 
 interface ParameterSidebarProps {
   hornParams: HornProfileParams;
@@ -71,14 +72,40 @@ export default function ParameterSidebar({
                 value={hornParams.flareType}
                 onChange={(e) => onHornParamsChange({ 
                   ...hornParams, 
-                  flareType: e.target.value as 'exponential' | 'conical' 
+                  flareType: e.target.value as ProfileType 
                 })}
                 className="w-full px-4 py-2.5 glass-input rounded-lg text-white outline-none placeholder-gray-400"
               >
-                <option value="exponential" className="bg-gray-800 text-white">Exponential</option>
-                <option value="conical" className="bg-gray-800 text-white">Conical</option>
+                {Object.values(ProfileType).map(type => (
+                  <option key={type} value={type} className="bg-gray-800 text-white">
+                    {getProfileDisplayName(type)}
+                  </option>
+                ))}
               </select>
             </div>
+
+            {/* Cutoff Frequency - show for certain profiles */}
+            {(hornParams.flareType === ProfileType.LE_CLEACH || 
+              hornParams.flareType === ProfileType.JMLC || 
+              hornParams.flareType === ProfileType.SPHERICAL_WAVE) && (
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Cutoff Frequency (Hz)
+                </label>
+                <input
+                  type="number"
+                  value={hornParams.cutoffFrequency || 500}
+                  onChange={(e) => onHornParamsChange({ 
+                    ...hornParams, 
+                    cutoffFrequency: parseFloat(e.target.value) || 500
+                  })}
+                  min="100"
+                  max="5000"
+                  step="50"
+                  className="w-full px-4 py-2.5 glass-input rounded-lg text-white outline-none placeholder-gray-400"
+                />
+              </div>
+            )}
 
             {/* Mouth Shape */}
             <div>
@@ -201,6 +228,217 @@ export default function ParameterSidebar({
                 className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer slider"
               />
               <div className="text-sm text-orange-300 mt-2 font-medium">{hornParams.wallThickness}mm thick</div>
+            </div>
+
+            {/* Acoustic Analysis Divider */}
+            <div className="border-t border-white/10 pt-4 mt-4">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-semibold text-purple-400">Acoustic Analysis</h4>
+                <div className="flex space-x-1">
+                  <button
+                    type="button"
+                    onClick={() => onHornParamsChange({ 
+                      ...hornParams, 
+                      acousticCalculationMode: 'size-to-dispersion' 
+                    })}
+                    className={`px-2 py-1 rounded text-xs font-medium transition-all ${
+                      (!hornParams.acousticCalculationMode || hornParams.acousticCalculationMode === 'size-to-dispersion')
+                        ? 'bg-purple-600 text-white'
+                        : 'text-gray-400 hover:text-gray-300 hover:bg-white/5'
+                    }`}
+                    title="Calculate dispersion from horn size"
+                  >
+                    Size→Disp
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onHornParamsChange({ 
+                      ...hornParams, 
+                      acousticCalculationMode: 'dispersion-to-size' 
+                    })}
+                    className={`px-2 py-1 rounded text-xs font-medium transition-all ${
+                      hornParams.acousticCalculationMode === 'dispersion-to-size'
+                        ? 'bg-purple-600 text-white'
+                        : 'text-gray-400 hover:text-gray-300 hover:bg-white/5'
+                    }`}
+                    title="Calculate horn size from target dispersion"
+                  >
+                    Disp→Size
+                  </button>
+                </div>
+              </div>
+
+              {/* Size to Dispersion Mode - Show calculated dispersion */}
+              {(!hornParams.acousticCalculationMode || hornParams.acousticCalculationMode === 'size-to-dispersion') && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">
+                      Analysis Frequency (Hz)
+                    </label>
+                    <input
+                      type="number"
+                      value={hornParams.targetFrequency || 1000}
+                      onChange={(e) => onHornParamsChange({ 
+                        ...hornParams, 
+                        targetFrequency: parseFloat(e.target.value) || 1000
+                      })}
+                      min="100"
+                      max="20000"
+                      step="100"
+                      className="w-full px-3 py-2 glass-input rounded-lg text-white outline-none text-sm"
+                    />
+                  </div>
+                  
+                  {/* Display calculated dispersion */}
+                  <div className="bg-purple-900/20 rounded-lg p-3 border border-purple-600/30">
+                    <div className="text-xs font-medium text-purple-300 mb-2">Expected Dispersion</div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-gray-400">Horizontal:</span>
+                        <span className="ml-2 text-white font-medium">
+                          {hornParams.calculatedHorizontalDispersion?.toFixed(0) || '--'}°
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Vertical:</span>
+                        <span className="ml-2 text-white font-medium">
+                          {hornParams.calculatedVerticalDispersion?.toFixed(0) || '--'}°
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mt-2 text-xs">
+                      <span className="text-gray-400">Cutoff Freq:</span>
+                      <span className="ml-2 text-white font-medium">
+                        {hornParams.calculatedCutoffFrequency?.toFixed(0) || '--'} Hz
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Dispersion to Size Mode - Input target dispersion */}
+              {hornParams.acousticCalculationMode === 'dispersion-to-size' && (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-1">
+                        Target H-Disp (°)
+                      </label>
+                      <input
+                        type="number"
+                        value={hornParams.targetHorizontalDispersion || 60}
+                        onChange={(e) => onHornParamsChange({ 
+                          ...hornParams, 
+                          targetHorizontalDispersion: parseFloat(e.target.value) || 60
+                        })}
+                        min="10"
+                        max="180"
+                        step="5"
+                        className="w-full px-3 py-2 glass-input rounded-lg text-white outline-none text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-1">
+                        Target V-Disp (°)
+                      </label>
+                      <input
+                        type="number"
+                        value={hornParams.targetVerticalDispersion || 40}
+                        onChange={(e) => onHornParamsChange({ 
+                          ...hornParams, 
+                          targetVerticalDispersion: parseFloat(e.target.value) || 40
+                        })}
+                        min="10"
+                        max="180"
+                        step="5"
+                        className="w-full px-3 py-2 glass-input rounded-lg text-white outline-none text-sm"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">
+                      Target Frequency (Hz)
+                    </label>
+                    <input
+                      type="number"
+                      value={hornParams.targetFrequency || 1000}
+                      onChange={(e) => onHornParamsChange({ 
+                        ...hornParams, 
+                        targetFrequency: parseFloat(e.target.value) || 1000
+                      })}
+                      min="100"
+                      max="20000"
+                      step="100"
+                      className="w-full px-3 py-2 glass-input rounded-lg text-white outline-none text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">
+                      Cutoff Frequency (Hz)
+                    </label>
+                    <input
+                      type="number"
+                      value={hornParams.cutoffFrequency || 500}
+                      onChange={(e) => onHornParamsChange({ 
+                        ...hornParams, 
+                        cutoffFrequency: parseFloat(e.target.value) || 500
+                      })}
+                      min="100"
+                      max="5000"
+                      step="50"
+                      className="w-full px-3 py-2 glass-input rounded-lg text-white outline-none text-sm"
+                    />
+                  </div>
+                  
+                  {/* Display calculated size */}
+                  <div className="bg-purple-900/20 rounded-lg p-3 border border-purple-600/30">
+                    <div className="text-xs font-medium text-purple-300 mb-2">Required Horn Size</div>
+                    <div className="space-y-1 text-xs">
+                      <div>
+                        <span className="text-gray-400">Mouth Width:</span>
+                        <span className="ml-2 text-white font-medium">
+                          {hornParams.calculatedMouthWidth?.toFixed(0) || '--'} mm
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Mouth Height:</span>
+                        <span className="ml-2 text-white font-medium">
+                          {hornParams.calculatedMouthHeight?.toFixed(0) || '--'} mm
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Length:</span>
+                        <span className="ml-2 text-white font-medium">
+                          {hornParams.calculatedLength?.toFixed(0) || '--'} mm
+                        </span>
+                      </div>
+                    </div>
+                    {hornParams.calculatedMouthWidth && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onHornParamsChange({
+                            ...hornParams,
+                            mouthWidth: hornParams.calculatedMouthWidth || hornParams.mouthWidth,
+                            mouthHeight: hornParams.calculatedMouthHeight || hornParams.mouthHeight,
+                            length: hornParams.calculatedLength || hornParams.length,
+                            acousticCalculationMode: 'size-to-dispersion'
+                          });
+                        }}
+                        className="mt-2 w-full px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded transition-colors"
+                      >
+                        Apply Calculated Size
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="text-xs text-gray-400 mt-2">
+                <p>Dispersion angles measured at -6dB points</p>
+              </div>
             </div>
           </div>
         </div>
