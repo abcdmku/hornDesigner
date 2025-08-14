@@ -1,0 +1,1 @@
+I dont like how leva looks/works. remove it and replace it with the tailwind and the way the side panel looks in the original App.tsx. Maintain all functionality of v2 App but the look and feel of the original app

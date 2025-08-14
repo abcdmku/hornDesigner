@@ -47,7 +47,8 @@
       "Bash(npx tsx:*)",
       "WebFetch(domain:sphericalhorns.net)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   },
   "hooks": {
     "PostToolUse": [
