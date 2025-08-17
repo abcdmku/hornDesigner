@@ -155,20 +155,27 @@ export function HornDesignerUI() {
         ))}
       </div>
 
-      {/* === Right: 3D Preview === */}
-      <div className="bg-black">
-        <Canvas
-          camera={{
-            position: [0, params.length ? params.length / 2 : 150, params.mouthRadius || 200],
-            fov: 45,
-          }}
-        >
-          <ambientLight />
-          <directionalLight position={[0, 0, 500]} intensity={0.5} />
-          {/* <HornMesh profilePoints={profilePoints} /> */}
+      {/* === Right: 2D Profile View === */}
+      <div className="bg-black flex flex-col">
+        {/* 2D Chart View */}
+        <div className="flex-1 p-4">
           <Profile2DViewV2 profilePoints={profilePoints} />
-          <OrbitControls />
-        </Canvas>
+        </div>
+        
+        {/* 3D View (optional - commented out for now) */}
+        {/* <div className="flex-1">
+          <Canvas
+            camera={{
+              position: [0, params.length ? params.length / 2 : 150, params.mouthRadius || 200],
+              fov: 45,
+            }}
+          >
+            <ambientLight />
+            <directionalLight position={[0, 0, 500]} intensity={0.5} />
+            <HornMesh profilePoints={profilePoints} />
+            <OrbitControls />
+          </Canvas>
+        </div> */}
       </div>
     </div>
   );

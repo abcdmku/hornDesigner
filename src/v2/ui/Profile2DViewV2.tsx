@@ -27,8 +27,9 @@ export const Profile2DViewV2: React.FC<Profile2DViewProps> = ({ profilePoints })
   }));
 
   return (
-    <div className="w-full h-80 bg-gray-900 rounded p-2">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="w-full h-full bg-gray-900 rounded p-4">
+      <h2 className="text-white text-lg mb-2">Horn Profile</h2>
+      <ResponsiveContainer width="100%" height="90%">
         <LineChart data={data} margin={{ top: 10, right: 20, bottom: 30, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#555" />
           <XAxis
