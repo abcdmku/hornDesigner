@@ -24,23 +24,56 @@ export function tractrixProfile(p: TractrixParams): ProfilePoint[] {
     a = solveBracketed(f, r0 * 1.001, r0 * 1e3);
   }
   if (!a) throw new Error("Provide mouthRadius or length");
-  if (!L) L = xOfR(r0, a);
+  
+  // Calculate the actual length for the given mouth radius
+  const actualLength = xOfR(r0, a);
+  
+  // If user specified a length but it's incompatible with the mouth radius, use the actual length
+  if (L && Math.abs(L - actualLength) > actualLength * 0.1) {
+    console.warn(`Tractrix: Specified length ${L} incompatible with mouth radius ${a}. Using actual length ${actualLength}`);
+    L = actualLength;
+  }
+  if (!L) L = actualLength;
 
   const xs = linspace(0, L, p.segments);
   // Invert x(r) -> r(x) using monotonic bracket [r0..a]
   const out: ProfilePoint[] = [];
   for (let i = 0; i < xs.length; i++) {
     const x = xs[i];
-    const r = solveBracketed(
-      (rv) => xOfR(rv, a!) - x,
-      Math.min(r0, a! * 0.999999),
-      a! * (1 - 1e-12),
-    );
-    out.push({ x, r });
+    
+    // For tractrix, radius increases from throat (r0) to mouth (a) as x increases from 0 to L
+    // So we need to solve for r such that xOfR(r, a) = L - x (distance from mouth)
+    const targetDist = L - x;
+    
+    // Handle edge cases
+    if (targetDist <= 0) {
+      out.push({ x, r: a });
+      continue;
+    }
+    if (targetDist >= L) {
+      out.push({ x, r: r0 });
+      continue;
+    }
+    
+    try {
+      const r = solveBracketed(
+        (rv) => xOfR(rv, a!) - targetDist,
+        r0,
+        a! * 0.999999,
+      );
+      out.push({ x, r });
+    } catch (e) {
+      // If solver fails, use linear interpolation as fallback
+      const t = x / L;
+      const r = r0 + t * (a - r0);
+      out.push({ x, r });
+    }
   }
   // exact ends
-  out[0].r = r0;
-  out[out.length - 1].r = a!;
+  if (out.length > 0) {
+    out[0].r = r0;
+    out[out.length - 1].r = a!;
+  }
   return out;
 }
 
