@@ -30,6 +30,16 @@ export const Profile2DViewV2: React.FC<Profile2DViewV2Props> = ({
     }
 
     const profilePoints = profileFunc(profileParams);
+    
+    // Debug logging
+    console.log('Profile2DViewV2 - profileType:', profileType);
+    console.log('Profile2DViewV2 - profileParams:', profileParams);
+    console.log('Profile2DViewV2 - profilePoints:', profilePoints?.slice(0, 5)); // Log first 5 points
+    
+    if (!profilePoints || profilePoints.length === 0) {
+      console.error('No profile points generated');
+      return;
+    }
 
     // Set canvas size
     const rect = canvas.getBoundingClientRect();
@@ -46,11 +56,11 @@ export const Profile2DViewV2: React.FC<Profile2DViewV2Props> = ({
     const graphHeight = rect.height - padding * 2;
 
     // Find min/max values for scaling
-    const maxRadius = Math.max(...profilePoints.map(p => p.radius));
-    const maxX = profileParams.length;
+    const maxRadius = Math.max(...profilePoints.map(p => p.r));
+    const maxZ = profileParams.length;
 
     // Scale factors
-    const xScale = graphWidth / maxX;
+    const xScale = graphWidth / maxZ;
     const yScale = (graphHeight / 2) / maxRadius;
 
     // Draw grid
@@ -97,8 +107,8 @@ export const Profile2DViewV2: React.FC<Profile2DViewV2Props> = ({
     ctx.beginPath();
     
     profilePoints.forEach((point, index) => {
-      const x = padding + point.x * xScale;
-      const y = rect.height / 2 - point.radius * yScale;
+      const x = padding + point.z * xScale;
+      const y = rect.height / 2 - point.r * yScale;
       
       if (index === 0) {
         ctx.moveTo(x, y);
@@ -111,8 +121,8 @@ export const Profile2DViewV2: React.FC<Profile2DViewV2Props> = ({
     // Draw profile (lower half - mirror)
     ctx.beginPath();
     profilePoints.forEach((point, index) => {
-      const x = padding + point.x * xScale;
-      const y = rect.height / 2 + point.radius * yScale;
+      const x = padding + point.z * xScale;
+      const y = rect.height / 2 + point.r * yScale;
       
       if (index === 0) {
         ctx.moveTo(x, y);
@@ -129,7 +139,7 @@ export const Profile2DViewV2: React.FC<Profile2DViewV2Props> = ({
     // X-axis labels
     ctx.textAlign = 'center';
     for (let i = 0; i <= 5; i++) {
-      const value = (maxX * i / 5).toFixed(0);
+      const value = (maxZ * i / 5).toFixed(0);
       const x = padding + (graphWidth * i / 5);
       ctx.fillText(`${value}mm`, x, rect.height - padding + 20);
     }
@@ -163,7 +173,7 @@ export const Profile2DViewV2: React.FC<Profile2DViewV2Props> = ({
     ctx.fillText(
       `Throat: ${(profileParams.throatRadius * 2).toFixed(1)}mm`, 
       padding + 10, 
-      rect.height / 2 - profilePoints[0].radius * yScale - 10
+      rect.height / 2 - profilePoints[0].r * yScale - 10
     );
     
     // Mouth diameter
@@ -172,7 +182,7 @@ export const Profile2DViewV2: React.FC<Profile2DViewV2Props> = ({
     ctx.fillText(
       `Mouth: ${(profileParams.mouthRadius * 2).toFixed(1)}mm`, 
       rect.width - padding - 10, 
-      rect.height / 2 - lastPoint.radius * yScale - 10
+      rect.height / 2 - lastPoint.r * yScale - 10
     );
 
   }, [profileType, profileParams]);
