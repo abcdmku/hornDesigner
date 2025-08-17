@@ -33,12 +33,12 @@ export const profileFields: Record<ProfileType, FieldDef[]> = {
     ],
     [ProfileType.JMLC]: [
         ...baseFields,
-        { key: "cutoffFrequency", label: "Cutoff Frequency (Hz)", type: "number", min: 0 },
-        { key: "alpha", label: "Mouth Angle (deg)", type: "number", min: 0, max: 180 },
+        { key: "fc", label: "Cutoff Frequency (Hz)", type: "number", min: 0 },
+        { key: "alpha0_deg", label: "Mouth Angle (deg)", type: "number", min: 0, max: 180 },
     ],
     [ProfileType.OBLATE_SPHEROID]: [
         ...baseFields,
-        { key: "throatAngle", label: "Throat Angle (deg)", type: "number", min: 0, max: 89 },
+        { key: "thetaThroatDeg", label: "Throat Angle (deg)", type: "number", min: 0, max: 89 },
         { key: "beta", label: "Beta (2–8)", type: "number", min: 0 },
     ],
     [ProfileType.SPHERICAL]: baseFields,

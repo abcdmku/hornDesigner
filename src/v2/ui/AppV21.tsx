@@ -45,15 +45,15 @@ export function HornDesignerUI() {
           mouthRadius: 200,
           length: 300,
           segments: 100,
-          cutoffFrequency: 500,
-          alpha: 45,
+          fc: 500,
+          alpha0_deg: 45,
       },
       [ProfileType.OBLATE_SPHEROID]: {
           throatRadius: 10,
           mouthRadius: 200,
           length: 300,
           segments: 100,
-          throatAngle: 10,
+          thetaThroatDeg: 10,
           beta: 2,
       },
       [ProfileType.SPHERICAL]: {

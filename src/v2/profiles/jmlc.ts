@@ -53,7 +53,13 @@ export function jmlcProfile(pp: JMLCParams): ProfilePoint[] {
     // bracket L using tractrix-like heuristic
     const Llo = Math.max(0.05, (p.mouthRadius - p.throatRadius) * 0.5);
     const Lhi = Math.max(Llo * 20, (p.mouthRadius - p.throatRadius) * 10 + 0.2);
-    L = solveBracketed((Lx) => integrateJMLC(p, Lx).alphaEnd - alphaTarget, Llo, Lhi);
+    try {
+      L = solveBracketed((Lx) => integrateJMLC(p, Lx).alphaEnd - alphaTarget, Llo, Lhi);
+    } catch (e) {
+      // If bracketing fails, use a reasonable default length
+      L = (p.mouthRadius - p.throatRadius) * 3;
+      console.warn("JMLC: Could not solve for optimal length, using default");
+    }
   }
   const { pts } = integrateJMLC(p, L!);
   // If mouthRadius provided, scale gently to hit exact mouth r without distorting start:
