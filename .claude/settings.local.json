@@ -45,7 +45,8 @@
       "Bash(npm test)",
       "WebSearch",
       "Bash(npx tsx:*)",
-      "WebFetch(domain:sphericalhorns.net)"
+      "WebFetch(domain:sphericalhorns.net)",
+      "Bash(npx prettier:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
