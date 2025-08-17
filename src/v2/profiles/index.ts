@@ -12,6 +12,7 @@ import { hyperbolic } from './hyperbolic';
 import { hypex } from './hypex';
 import { tractrix } from './tractrix';
 import { leCleach } from './leCleach';
+import { kugelwellen } from './kugelwellen';
 import { jmlc } from './jmlc';
 import { oblateSpheroid } from './oblateSpheroid';
 import { spherical } from './spherical';
@@ -28,6 +29,7 @@ export {
   hypex,
   tractrix,
   leCleach,
+  kugelwellen,
   jmlc,
   oblateSpheroid,
   spherical,
@@ -45,6 +47,7 @@ export const profileFunctions = {
   hypex,
   tractrix,
   leCleach,
+  kugelwellen,
   jmlc,
   oblateSpheroid,
   spherical,

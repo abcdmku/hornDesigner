@@ -38,6 +38,7 @@ function getProfileDisplayName(type: ProfileType): string {
     hypex: "Hypex",
     tractrix: "Tractrix",
     leCleach: "Le Cléac'h",
+    kugelwellen: "Kugelwellen",
     jmlc: "JMLC",
     oblateSpheroid: "Oblate Spheroid",
     spherical: "Spherical",
@@ -147,6 +148,7 @@ export const CustomControlSidebar: React.FC<CustomControlSidebarProps> = ({
             values.profileType === "hypex" ||
             values.profileType === "tractrix" ||
             values.profileType === "leCleach" ||
+            values.profileType === "kugelwellen" ||
             values.profileType === "jmlc" ||
             values.profileType === "oblateSpheroid" ||
             values.profileType === "parabolic" ||
@@ -167,8 +169,8 @@ export const CustomControlSidebar: React.FC<CustomControlSidebarProps> = ({
               />
             </ConditionalSection>
             
-            {/* Cutoff Frequency for Tractrix and Le Cléac'h */}
-            <ConditionalSection condition={values.profileType === "tractrix" || values.profileType === "leCleach"}>
+            {/* Cutoff Frequency for Tractrix, Le Cléac'h, and Kugelwellen */}
+            <ConditionalSection condition={values.profileType === "tractrix" || values.profileType === "leCleach" || values.profileType === "kugelwellen"}>
               <NumberInput
                 label="Cutoff Frequency"
                 value={values.cutoffFrequency || 500}

@@ -29,6 +29,7 @@ export enum ProfileType {
   HYPEX = 'hypex',
   TRACTRIX = 'tractrix',
   LE_CLEACH = 'leCleach',
+  KUGELWELLEN = 'kugelwellen',
   JMLC = 'jmlc',
   OBLATE_SPHEROID = 'oblateSpheroid',
   SPHERICAL = 'spherical',
