@@ -237,47 +237,50 @@ function App() {
         <div className="flex-1 relative m-4">
           <div className="glass-dark rounded-2xl h-full shadow-2xl overflow-hidden relative">
             {viewMode === '3d' ? (
-              <>
-                <Scene3D>
-                  <OptimizedHornGeometry
-                    hornParams={appState.hornParams}
-                    plateParams={appState.plateParams}
-                    driverParams={appState.driverParams}
-                    showMountingPlate={appState.showMountingPlate}
-                    showDriverMount={appState.showDriverMount}
-                    performanceMode={performanceMode}
-                    enableLOD={true}
+              <Scene3D>
+                <OptimizedHornGeometry
+                  hornParams={appState.hornParams}
+                  plateParams={appState.plateParams}
+                  driverParams={appState.driverParams}
+                  showMountingPlate={appState.showMountingPlate}
+                  showDriverMount={appState.showDriverMount}
+                  performanceMode={performanceMode}
+                  enableLOD={true}
+                />
+                {showPerformanceMonitor && (
+                  <PerformanceMonitor
+                    visible={showPerformanceMonitor}
+                    position="top-left"
+                    onPerformanceChange={handlePerformanceChange}
+                    showGraphs={true}
+                    minimal={false}
                   />
-                  {showPerformanceMonitor && (
-                    <PerformanceMonitor
-                      visible={showPerformanceMonitor}
-                      position="top-left"
-                      onPerformanceChange={handlePerformanceChange}
-                      showGraphs={true}
-                      minimal={false}
-                    />
-                  )}
-                </Scene3D>
-                {/* View Toggle Button - bottom right in 3D view */}
-                <div className="absolute bottom-4 right-4 z-10">
-                  <button
-                    onClick={() => setViewMode('2d')}
-                    className="glass-button px-6 py-3 rounded-xl text-white font-medium hover:scale-105 transition-transform flex items-center space-x-2 shadow-lg"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                    <span>2D View</span>
-                  </button>
-                </div>
-              </>
+                )}
+              </Scene3D>
             ) : (
               <Profile2DView 
                 hornParams={appState.hornParams}
                 onToggle3D={() => setViewMode('3d')}
               />
             )}
+          </div>
+          {/* View Toggle Button - positioned outside overflow container */}
+          <div className="absolute bottom-8 right-8 z-50">
+            <button
+              onClick={() => setViewMode(viewMode === '3d' ? '2d' : '3d')}
+              className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl text-white font-medium hover:scale-105 transition-all flex items-center space-x-2 shadow-xl"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {viewMode === '3d' ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                )}
+              </svg>
+              <span>{viewMode === '3d' ? '2D View' : '3D View'}</span>
+            </button>
           </div>
         </div>
 

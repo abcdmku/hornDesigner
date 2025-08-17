@@ -249,19 +249,6 @@ export default function Profile2DView({ hornParams, onToggle3D }: Profile2DViewP
         </div>
       </div>
 
-      {/* View Toggle Button - bottom right */}
-      <div className="absolute bottom-4 right-4 z-10">
-        <button
-          onClick={onToggle3D}
-          className="glass-button px-6 py-3 rounded-xl text-white font-medium hover:scale-105 transition-transform flex items-center space-x-2 shadow-lg"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-          </svg>
-          <span>3D View</span>
-        </button>
-      </div>
 
     </div>
   );
