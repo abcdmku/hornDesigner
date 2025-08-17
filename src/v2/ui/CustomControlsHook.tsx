@@ -24,6 +24,12 @@ export interface ControlValues {
   spiralRate?: number; // Hyperbolic spiral
   tStart?: number; // PETF
   tEnd?: number; // PETF
+  
+  // Cutoff and rollover parameters
+  cutoffFrequency?: number; // Hz - for tractrix, Le Cléac'h
+  cutoffWavenumber?: number; // For advanced tractrix
+  rolloverPoint?: number; // Le Cléac'h rollover position (0-1)
+  rolloverStrength?: number; // Le Cléac'h rollover strength (0-1)
 
   // Cross-section parameters
   crossSectionMode: CrossSectionMode;
@@ -75,6 +81,11 @@ const defaultValues: ControlValues = {
   spiralRate: 0.5,
   tStart: 0.5,
   tEnd: 1.0,
+  
+  // Cutoff and rollover defaults
+  cutoffFrequency: 500,
+  rolloverPoint: 0.7,
+  rolloverStrength: 0.8,
 
   crossSectionMode: "circle",
   aspect: 1,

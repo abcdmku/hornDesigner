@@ -12,14 +12,23 @@ export interface ProfileParams {
   mouthRadius: number;
   length: number;
   segments: number;
+  
+  // Cutoff/rollover parameters
+  cutoffFrequency?: number;  // Hz - for frequency-dependent profiles
+  cutoffWavenumber?: number; // For tractrix
+  rolloverPoint?: number;    // Position (0-1) where rollover starts
+  rolloverStrength?: number; // Strength of rollover effect (0-1)
+  
   [key: string]: any; // optional profile-specific params
 }
 
 export enum ProfileType {
   CONICAL = 'conical',
   EXPONENTIAL = 'exponential',
+  HYPERBOLIC = 'hyperbolic',
   HYPEX = 'hypex',
   TRACTRIX = 'tractrix',
+  LE_CLEACH = 'leCleach',
   JMLC = 'jmlc',
   OBLATE_SPHEROID = 'oblateSpheroid',
   SPHERICAL = 'spherical',

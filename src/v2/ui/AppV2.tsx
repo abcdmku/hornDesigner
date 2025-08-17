@@ -53,6 +53,11 @@ export const AppV2: React.FC = () => {
     spiralRate: controls.values.spiralRate,
     tStart: controls.values.tStart,
     tEnd: controls.values.tEnd,
+    // Cutoff and rollover parameters
+    cutoffFrequency: controls.values.cutoffFrequency,
+    cutoffWavenumber: controls.values.cutoffWavenumber,
+    rolloverPoint: controls.values.rolloverPoint,
+    rolloverStrength: controls.values.rolloverStrength,
   };
 
   // Prepare cross-section specification

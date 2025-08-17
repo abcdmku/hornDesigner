@@ -34,8 +34,10 @@ function getProfileDisplayName(type: ProfileType): string {
   const displayNames: Record<ProfileType, string> = {
     conical: "Conical",
     exponential: "Exponential",
+    hyperbolic: "Hyperbolic",
     hypex: "Hypex",
     tractrix: "Tractrix",
+    leCleach: "Le Cléac'h",
     jmlc: "JMLC",
     oblateSpheroid: "Oblate Spheroid",
     spherical: "Spherical",
@@ -143,6 +145,8 @@ export const CustomControlSidebar: React.FC<CustomControlSidebarProps> = ({
         <ConditionalSection
           condition={
             values.profileType === "hypex" ||
+            values.profileType === "tractrix" ||
+            values.profileType === "leCleach" ||
             values.profileType === "jmlc" ||
             values.profileType === "oblateSpheroid" ||
             values.profileType === "parabolic" ||
@@ -160,6 +164,39 @@ export const CustomControlSidebar: React.FC<CustomControlSidebarProps> = ({
                 min={0.1}
                 max={1.0}
                 step={0.01}
+              />
+            </ConditionalSection>
+            
+            {/* Cutoff Frequency for Tractrix and Le Cléac'h */}
+            <ConditionalSection condition={values.profileType === "tractrix" || values.profileType === "leCleach"}>
+              <NumberInput
+                label="Cutoff Frequency"
+                value={values.cutoffFrequency || 500}
+                onChange={(value) => updateValue("cutoffFrequency", value)}
+                min={100}
+                max={2000}
+                step={50}
+                unit="Hz"
+              />
+            </ConditionalSection>
+            
+            {/* Rollover controls for Le Cléac'h */}
+            <ConditionalSection condition={values.profileType === "leCleach"}>
+              <SliderInput
+                label="Rollover Point"
+                value={values.rolloverPoint || 0.7}
+                onChange={(value) => updateValue("rolloverPoint", value)}
+                min={0.5}
+                max={0.9}
+                step={0.05}
+              />
+              <SliderInput
+                label="Rollover Strength"
+                value={values.rolloverStrength || 0.8}
+                onChange={(value) => updateValue("rolloverStrength", value)}
+                min={0.1}
+                max={1.0}
+                step={0.1}
               />
             </ConditionalSection>
 

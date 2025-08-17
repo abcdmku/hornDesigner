@@ -1,7 +1,7 @@
 /**
- * True-Expansion Tractrix horn profile
- * Based on spherical wavefront expansion
- * Reference: https://sphericalhorns.net/2019/08/30/a-true-expansion-tractrix-horn/
+ * Tractrix horn profile
+ * Classic tractrix curve with proper rollover characteristics
+ * The tractrix provides constant directivity above cutoff frequency
  */
 
 import { ProfileParams, ProfilePoint } from './types';
@@ -10,34 +10,40 @@ export function tractrix(params: ProfileParams): ProfilePoint[] {
   const { throatRadius, mouthRadius, length, segments } = params;
   const points: ProfilePoint[] = [];
   
-  // For true-expansion tractrix, we need to solve the differential equation
-  // This is a simplified implementation using parametric equations
-  const cutoffWavenumber = params.cutoffWavenumber ?? (1 / throatRadius);
+  // Cutoff frequency determines the rollover point
+  const cutoffFreq = params.cutoffFrequency ?? 500; // Hz
+  const c = 343000; // Speed of sound in mm/s
+  const cutoffWavelength = c / cutoffFreq;
+  const k = 2 * Math.PI / cutoffWavelength; // Wavenumber
+  
+  // Calculate the mouth radius for infinite horn
+  const a = throatRadius / Math.tanh(k * throatRadius);
   
   for (let i = 0; i <= segments; i++) {
-    const t = i / segments;
-    const z = t * length;
+    const z = (i / segments) * length;
     
-    // Tractrix curve parametrization
-    // This ensures constant directivity above cutoff
-    const a = mouthRadius;
-    const theta = Math.PI * (1 - t) / 2;
-    
-    let r: number;
-    if (t === 0) {
-      r = throatRadius;
-    } else if (t === 1) {
-      r = mouthRadius;
+    if (i === 0) {
+      points.push({ z: 0, r: throatRadius });
     } else {
-      // True tractrix expansion
-      const expFactor = Math.exp(cutoffWavenumber * z);
-      r = throatRadius * Math.sqrt(1 + (expFactor - 1) * (expFactor - 1) / 4);
+      // Tractrix equation: r = a * sech(z/a + offset)
+      // where offset ensures r(0) = throatRadius
+      const offset = Math.log((a + Math.sqrt(a * a - throatRadius * throatRadius)) / throatRadius);
       
-      // Ensure smooth transition and proper bounds
+      // Calculate radius using tractrix equation
+      let r = a / Math.cosh(z / a + offset);
+      
+      // Apply scaling to match desired mouth radius
+      const theoreticalMouthRadius = a / Math.cosh(length / a + offset);
+      if (theoreticalMouthRadius > throatRadius) {
+        const scale = (mouthRadius - throatRadius) / (theoreticalMouthRadius - throatRadius);
+        r = throatRadius + (r - throatRadius) * scale;
+      }
+      
+      // Ensure within bounds
       r = Math.min(Math.max(r, throatRadius), mouthRadius);
+      
+      points.push({ z, r });
     }
-    
-    points.push({ z, r });
   }
   
   return points;

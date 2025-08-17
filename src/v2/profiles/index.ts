@@ -8,8 +8,10 @@ export { ProfileType } from './types';
 // Import all profile functions
 import { conical } from './conical';
 import { exponential } from './exponential';
+import { hyperbolic } from './hyperbolic';
 import { hypex } from './hypex';
 import { tractrix } from './tractrix';
+import { leCleach } from './leCleach';
 import { jmlc } from './jmlc';
 import { oblateSpheroid } from './oblateSpheroid';
 import { spherical } from './spherical';
@@ -22,8 +24,10 @@ import { petf } from './petf';
 export {
   conical,
   exponential,
+  hyperbolic,
   hypex,
   tractrix,
+  leCleach,
   jmlc,
   oblateSpheroid,
   spherical,
@@ -37,8 +41,10 @@ export {
 export const profileFunctions = {
   conical,
   exponential,
+  hyperbolic,
   hypex,
   tractrix,
+  leCleach,
   jmlc,
   oblateSpheroid,
   spherical,
