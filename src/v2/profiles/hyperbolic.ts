@@ -14,15 +14,15 @@ export function hyperbolic(params: ProfileParams): ProfilePoint[] {
   const m = Math.acosh(mouthRadius / throatRadius) / length;
   
   for (let i = 0; i <= segments; i++) {
-    const z = (i / segments) * length;
+    const x = (i / segments) * length;
     
     if (i === 0) {
-      points.push({ z: 0, r: throatRadius });
+      points.push({ x: 0, r: throatRadius });
     } else if (i === segments) {
-      points.push({ z: length, r: mouthRadius });
+      points.push({ x: length, r: mouthRadius });
     } else {
-      const r = throatRadius * Math.cosh(m * z);
-      points.push({ z, r });
+      const r = throatRadius * Math.cosh(m * x);
+      points.push({ x, r });
     }
   }
   

@@ -1,63 +1,52 @@
-/**
- * Tractrix horn profile
- * Classic tractrix curve with proper rollover characteristics
- * Based on the tractrix curve equation: x = r₀ * ln((√(r² - y²) + r₀) / y) - √(r₀² - y²)
- */
+import { ProfileParams, ProfilePoint, linspace, assertPos, PI, solveBracketed } from "./shared";
 
-import { ProfileParams, ProfilePoint } from './types';
-
-export function tractrix(params: ProfileParams): ProfilePoint[] {
-  const { throatRadius, mouthRadius, length, segments } = params;
-  const points: ProfilePoint[] = [];
-  
-  // Cutoff frequency determines the mouth radius for infinite horn
-  const cutoffFreq = params.cutoffFrequency ?? 500; // Hz
-  const c = 343; // Speed of sound in m/s
-  const r0 = c / (2 * Math.PI * cutoffFreq) * 1000; // Convert to mm
-  
-  // For a finite horn, we need to scale the tractrix curve
-  // The tractrix curve starts at y = throat and goes to y = mouth
-  // We use parametric equations to generate the curve
-  
-  for (let i = 0; i <= segments; i++) {
-    const t = i / segments;
-    
-    if (i === 0) {
-      points.push({ z: 0, r: throatRadius });
-    } else if (i === segments) {
-      points.push({ z: length, r: mouthRadius });
-    } else {
-      // Parametric tractrix: y varies from throat to a value less than r0
-      // For practical horns, we limit y to reasonable values
-      const yMin = throatRadius;
-      const yMax = Math.min(mouthRadius, r0 * 0.99); // Don't let y reach r0
-      const y = yMin + (yMax - yMin) * t;
-      
-      // Calculate x using tractrix equation
-      // x = r0 * ln((√(r0² - y²) + r0) / y) - √(r0² - y²)
-      let x = 0;
-      if (y < r0) {
-        const sqrtTerm = Math.sqrt(r0 * r0 - y * y);
-        x = r0 * Math.log((sqrtTerm + r0) / y) - sqrtTerm;
-      }
-      
-      // Scale x to fit the horn length
-      const maxX = r0 * Math.log((Math.sqrt(r0 * r0 - yMax * yMax) + r0) / yMax) - Math.sqrt(r0 * r0 - yMax * yMax);
-      const z = (x / maxX) * length;
-      
-      // The radius at this point is y
-      const r = y;
-      
-      // Scale to match desired mouth radius
-      const scaleFactor = (mouthRadius - throatRadius) / (yMax - yMin);
-      const scaledR = throatRadius + (r - throatRadius) * scaleFactor;
-      
-      points.push({ z, r: scaledR });
-    }
-  }
-  
-  // Sort points by z to ensure proper ordering
-  points.sort((a, b) => a.z - b.z);
-  
-  return points;
+export interface TractrixParams extends ProfileParams {
+  // If mouthRadius omitted, we solve 'a' from provided length and throat radius by matching a chosen mouth angle (default ~90°).
+  mouthAngleDeg?: number; // optional, used if mouthRadius is not given; default 90
 }
+
+function xOfR(r: number, a: number): number {
+  // classic tractrix distance from mouth (x=0) to radius r
+  const t = Math.max(Math.min(r, a * (1 - 1e-12)), 1e-12);
+  const s = Math.sqrt(Math.max(a * a - t * t, 0));
+  return a * Math.log((a + s) / t) - s;
+}
+
+export function tractrixProfile(p: TractrixParams): ProfilePoint[] {
+  const r0 = p.throatRadius; assertPos(r0, "throatRadius");
+  let a = p.mouthRadius;     // mouth radius
+  let L = p.length;
+
+  // If a is unknown but L is known, solve for 'a' so x(r0) ≈ L
+  if (!a && L) {
+    // 'a' must be > r0. Bracket a in [r0*(1+eps), r0*1000] and solve x(r0,a) - L = 0
+    const f = (A: number) => xOfR(r0, A) - L!;
+    a = solveBracketed(f, r0 * 1.001, r0 * 1e3);
+  }
+  if (!a) throw new Error("Provide mouthRadius or length");
+  if (!L) L = xOfR(r0, a);
+
+  const xs = linspace(0, L, p.segments);
+  // Invert x(r) -> r(x) using monotonic bracket [r0..a]
+  const out: ProfilePoint[] = [];
+  for (let i = 0; i < xs.length; i++) {
+    const x = xs[i];
+    const r = solveBracketed(
+      (rv) => xOfR(rv, a!) - x,
+      Math.min(r0, a! * 0.999999),
+      a! * (1 - 1e-12),
+    );
+    out.push({ x, r });
+  }
+  // exact ends
+  out[0].r = r0;
+  out[out.length - 1].r = a!;
+  return out;
+}
+
+/** NOTE: "True-Expansion Tractrix"
+ * If you want area to follow a chosen expansion (e.g. exponential with m),
+ * you compute a(z) (local tractrix parameter) such that dS/dx at throat matches
+ * the target. Pragmatic approach: scale 'a' so the *integrated* S(x) drift is minimized.
+ * Keep classic tractrix for plotting now; apply true-expansion correction later in area matching.
+ */

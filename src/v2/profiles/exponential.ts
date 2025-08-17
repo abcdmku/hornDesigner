@@ -13,9 +13,9 @@ export function exponential(params: ProfileParams): ProfilePoint[] {
   const m = Math.log(mouthRadius / throatRadius) / length;
   
   for (let i = 0; i <= segments; i++) {
-    const z = (i / segments) * length;
-    const r = throatRadius * Math.exp(m * z);
-    points.push({ z, r });
+    const x = (i / segments) * length;
+    const r = throatRadius * Math.exp(m * x);
+    points.push({ x, r });
   }
   
   return points;

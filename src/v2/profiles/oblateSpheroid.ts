@@ -1,46 +1,24 @@
-/**
- * Oblate Spheroid horn profile
- * Based on oblate spheroidal wavefront expansion
- */
+import { ProfileParams, ProfilePoint, linspace } from "./shared";
 
-import { ProfileParams, ProfilePoint } from './types';
+export interface OSParams extends ProfileParams {
+  thetaThroatDeg: number; // 5..15
+  beta?: number;          // 2..8, default 4
+}
 
-export function oblateSpheroid(params: ProfileParams): ProfilePoint[] {
-  const { throatRadius, mouthRadius, length, segments } = params;
-  const points: ProfilePoint[] = [];
-  
-  // Oblate spheroid parameters
-  const eccentricity = params.eccentricity ?? 0.7;
-  const a = length; // Semi-major axis
-  const b = a * Math.sqrt(1 - eccentricity * eccentricity); // Semi-minor axis
-  
-  for (let i = 0; i <= segments; i++) {
-    const t = i / segments;
-    const z = t * length;
-    
-    if (t === 0) {
-      points.push({ z: 0, r: throatRadius });
-    } else if (t === 1) {
-      points.push({ z: length, r: mouthRadius });
-    } else {
-      // Oblate spheroid equation
-      // x^2/a^2 + (y^2 + z^2)/b^2 = 1
-      // Solving for radius at position z
-      const zNorm = z / a;
-      const radiusFactor = b * Math.sqrt(1 - zNorm * zNorm);
-      
-      // Scale to match throat and mouth radii
-      const baseRadius = throatRadius + (mouthRadius - throatRadius) * t;
-      const shapeModulation = 1 + (radiusFactor / b - 1) * 0.3;
-      
-      let r = baseRadius * shapeModulation;
-      
-      // Ensure smooth transition and bounds
-      r = Math.min(Math.max(r, throatRadius), mouthRadius);
-      
-      points.push({ z, r });
-    }
+export function oblateSpheroidProfile(p: OSParams): ProfilePoint[] {
+  const beta = p.beta ?? 4;
+  const ct = Math.cos((p.thetaThroatDeg * Math.PI) / 180);
+  const k0 = p.throatRadius / Math.max(ct, 1e-6);
+  const xs = linspace(0, p.length, p.segments);
+  const raw: ProfilePoint[] = new Array(p.segments);
+  for (let i = 0; i < xs.length; i++) {
+    const x = xs[i];
+    const r = k0 * Math.sqrt(Math.max(0, 1 - (1 - ct) * Math.exp((-beta * x) / p.length)));
+    raw[i] = { x, r };
   }
-  
-  return points;
+  // scale to hit mouth exactly
+  const scale = p.mouthRadius / raw[raw.length - 1].r;
+  const out = raw.map(({ x, r }) => ({ x, r: p.throatRadius + (r - p.throatRadius) * scale }));
+  out[out.length - 1].r = p.mouthRadius;
+  return out;
 }

@@ -1,65 +1,29 @@
-/**
- * PETF (Progressive Expansion T-Factor) horn profile
- * T-factor varies progressively along the horn length
- * Reference: https://sphericalhorns.net/2020/12/14/progressive-expansion-t-factor-horns/
- */
+import { ProfileParams, ProfilePoint, linspace, PI } from "./shared";
 
-import { ProfileParams, ProfilePoint } from './types';
+export interface PETFParams extends ProfileParams {
+  speedOfSound?: number;
+  fc?: number;  // or m
+  m?: number;
+  T0: number;
+  Tadd: number;
+  power?: number; // φ(x) = (x/L)^power
+}
 
-export function petf(params: ProfileParams): ProfilePoint[] {
-  const { throatRadius, mouthRadius, length, segments } = params;
-  const points: ProfilePoint[] = [];
-  
-  // PETF parameters
-  const tStart = params.tStart ?? 0.5; // T-factor at throat
-  const tEnd = params.tEnd ?? 1.0; // T-factor at mouth
-  const progressionType = params.progressionType ?? 'exponential'; // linear, exponential, or sigmoid
-  
-  for (let i = 0; i <= segments; i++) {
-    const t = i / segments;
-    const z = t * length;
-    
-    // Calculate progressive T-factor
-    let tFactor: number;
-    switch (progressionType) {
-      case 'linear':
-        tFactor = tStart + (tEnd - tStart) * t;
-        break;
-      case 'exponential':
-        tFactor = tStart * Math.pow(tEnd / tStart, t);
-        break;
-      case 'sigmoid':
-        const sigmoidX = 10 * (t - 0.5);
-        const sigmoid = 1 / (1 + Math.exp(-sigmoidX));
-        tFactor = tStart + (tEnd - tStart) * sigmoid;
-        break;
-      default:
-        tFactor = tStart + (tEnd - tStart) * t;
-    }
-    
-    // Apply progressive T-factor to expansion
-    // Combines hyperbolic and exponential characteristics with varying T
-    const k = Math.log(mouthRadius / throatRadius);
-    const zNorm = z / length;
-    
-    // Modified hypex formula with progressive T-factor
-    const hyperbolicPart = Math.cosh(tFactor * k * zNorm);
-    const exponentialPart = Math.exp((1 - tFactor) * k * zNorm);
-    
-    let r = throatRadius * Math.pow(hyperbolicPart * exponentialPart, 1 / (1 + 0.5 * (1 - tFactor)));
-    
-    // Ensure exact match at throat and mouth
-    if (i === 0) {
-      r = throatRadius;
-    } else if (i === segments) {
-      r = mouthRadius;
-    }
-    
-    // Ensure within bounds
-    r = Math.min(Math.max(r, throatRadius), mouthRadius);
-    
-    points.push({ z, r });
+export function petfProfile(p: PETFParams): ProfilePoint[] {
+  const c = p.speedOfSound ?? 343;
+  const m = p.m ?? ((p.fc ?? 0) > 0 ? (2 * Math.PI * (p.fc as number)) / c : undefined);
+  if (!m) throw new Error("Provide m or fc");
+  const S0 = PI * p.throatRadius * p.throatRadius;
+  const pow = p.power ?? 1.0;
+  const xs = linspace(0, p.length, p.segments);
+  const out: ProfilePoint[] = new Array(p.segments);
+  for (let i = 0; i < xs.length; i++) {
+    const x = xs[i];
+    const phi = Math.pow(x / p.length, pow);
+    const T = p.T0 + p.Tadd * phi;
+    const S = S0 * ((1 + T) * Math.exp(m * x) - T);
+    out[i] = { x, r: Math.sqrt(Math.max(S, 0) / PI) };
   }
-  
-  return points;
+  out[out.length - 1].r = p.mouthRadius ?? out[out.length - 1].r;
+  return out;
 }

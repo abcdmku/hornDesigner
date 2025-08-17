@@ -10,9 +10,9 @@ export function conical(params: ProfileParams): ProfilePoint[] {
   const points: ProfilePoint[] = [];
   
   for (let i = 0; i <= segments; i++) {
-    const z = (i / segments) * length;
-    const r = throatRadius + (mouthRadius - throatRadius) * (z / length);
-    points.push({ z, r });
+    const x = (i / segments) * length;
+    const r = throatRadius + (mouthRadius - throatRadius) * (x / length);
+    points.push({ x, r });
   }
   
   return points;
