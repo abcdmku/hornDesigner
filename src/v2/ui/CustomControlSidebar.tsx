@@ -99,21 +99,21 @@ export const CustomControlSidebar: React.FC<CustomControlSidebarProps> = ({
 
           <ControlGrid>
             <NumberInput
-              label="Throat Radius"
-              value={values.throatRadius}
-              onChange={(value) => updateValue("throatRadius", value)}
-              min={10}
-              max={100}
+              label="Throat Diameter"
+              value={values.throatRadius * 2}
+              onChange={(value) => updateValue("throatRadius", value / 2)}
+              min={20}
+              max={200}
               step={1}
               unit="mm"
             />
             <NumberInput
-              label="Mouth Radius"
-              value={values.mouthRadius}
-              onChange={(value) => updateValue("mouthRadius", value)}
-              min={50}
-              max={500}
-              step={5}
+              label="Mouth Diameter"
+              value={values.mouthRadius * 2}
+              onChange={(value) => updateValue("mouthRadius", value / 2)}
+              min={100}
+              max={1000}
+              step={10}
               unit="mm"
             />
           </ControlGrid>

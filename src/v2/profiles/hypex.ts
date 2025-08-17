@@ -15,14 +15,23 @@ export function hypex(params: ProfileParams): ProfilePoint[] {
   
   for (let i = 0; i <= segments; i++) {
     const z = (i / segments) * length;
-    const zNorm = z / length;
     
-    // Hyperbolic component with exponential growth
-    const hyperbolicPart = Math.cosh(T * k * zNorm);
-    const exponentialPart = Math.exp((1 - T) * k * zNorm);
-    
-    const r = throatRadius * hyperbolicPart * exponentialPart;
-    points.push({ z, r });
+    if (i === 0) {
+      // Ensure exact throat radius at start
+      points.push({ z: 0, r: throatRadius });
+    } else if (i === segments) {
+      // Ensure exact mouth radius at end
+      points.push({ z: length, r: mouthRadius });
+    } else {
+      const zNorm = z / length;
+      
+      // Hyperbolic component with exponential growth
+      const hyperbolicPart = Math.cosh(T * k * zNorm);
+      const exponentialPart = Math.exp((1 - T) * k * zNorm);
+      
+      const r = throatRadius * hyperbolicPart * exponentialPart;
+      points.push({ z, r });
+    }
   }
   
   return points;

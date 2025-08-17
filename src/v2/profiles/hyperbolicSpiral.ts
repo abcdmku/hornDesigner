@@ -18,8 +18,12 @@ export function hyperbolicSpiral(params: ProfileParams): ProfilePoint[] {
     const t = i / segments;
     const z = t * length;
     
-    if (t === 0) {
+    if (i === 0) {
+      // Ensure exact throat radius at start
       points.push({ z: 0, r: throatRadius });
+    } else if (i === segments) {
+      // Ensure exact mouth radius at end
+      points.push({ z: length, r: mouthRadius });
     } else {
       // Hyperbolic spiral equation
       // r(z) = r_throat * exp(k * theta) * cosh(h * theta)
