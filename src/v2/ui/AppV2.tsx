@@ -11,6 +11,7 @@ import * as THREE from "three";
 import { HornWithAxes } from "./HornMesh";
 import { useHornControls } from "./CustomControlsHook";
 import { CustomControlSidebar } from "./CustomControlSidebar";
+import { Profile2DViewV2 } from "./Profile2DViewV2";
 import { ProfileParams } from "../profiles/types";
 import { CrossSectionSpec } from "../math/hornMath";
 import { getProfileFunction } from "../profiles";
@@ -29,6 +30,7 @@ export const AppV2: React.FC = () => {
   }>({});
 
   const [isComputing, setIsComputing] = useState(false);
+  const [viewMode, setViewMode] = useState<'2d' | '3d'>('3d');
   const geometryRef = useRef<THREE.BufferGeometry | null>(null);
 
   // Main horn controls using custom hook
@@ -214,8 +216,9 @@ export const AppV2: React.FC = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 relative">
-        {/* 3D Canvas */}
-        <Canvas
+        {/* 3D Canvas or 2D View */}
+        {viewMode === '3d' ? (
+          <Canvas
           camera={{ position: [500, 500, 500], fov: 45 }}
           shadows
           gl={{ preserveDrawingBuffer: true }}
@@ -279,6 +282,32 @@ export const AppV2: React.FC = () => {
             {import.meta.env.MODE === "development" && <Stats />}
           </Suspense>
         </Canvas>
+        ) : (
+          <Profile2DViewV2
+            profileType={controls.values.profileType}
+            profileParams={profileParams}
+            onToggle3D={() => setViewMode('3d')}
+          />
+        )}
+
+        {/* View Toggle Button */}
+        <div className="absolute bottom-8 right-8 z-50">
+          <button
+            onClick={() => setViewMode(viewMode === '3d' ? '2d' : '3d')}
+            className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl text-white font-medium hover:scale-105 transition-all flex items-center space-x-2 shadow-xl"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {viewMode === '3d' ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              )}
+            </svg>
+            <span>{viewMode === '3d' ? '2D View' : '3D View'}</span>
+          </button>
+        </div>
 
         {/* Status overlay */}
         {isComputing && (

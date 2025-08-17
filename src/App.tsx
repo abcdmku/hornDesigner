@@ -286,8 +286,6 @@ function App() {
 
       </div>
 
-      <AcousticSidePanel hornParams={appState.hornParams}/>
-
     </div>
   );
 }
