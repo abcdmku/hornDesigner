@@ -4,9 +4,9 @@
  * where m = acosh(r_mouth / r_throat) / length
  */
 
-import { ProfileParams, ProfilePoint } from './types';
+import { AnyProfileParams, ProfilePoint } from './types';
 
-export function hyperbolic(params: ProfileParams): ProfilePoint[] {
+export function hyperbolic(params: AnyProfileParams): ProfilePoint[] {
   const { throatRadius, mouthRadius, length, segments } = params;
   const points: ProfilePoint[] = [];
   

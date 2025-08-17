@@ -3,9 +3,9 @@
  * Linear expansion from throat to mouth
  */
 
-import { ProfileParams, ProfilePoint } from './types';
+import { AnyProfileParams, ProfilePoint } from './types';
 
-export function conical(params: ProfileParams): ProfilePoint[] {
+export function conical(params: AnyProfileParams): ProfilePoint[] {
   const { throatRadius, mouthRadius, length, segments } = params;
   const points: ProfilePoint[] = [];
   
